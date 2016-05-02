@@ -16,6 +16,7 @@ $(function() {
     debug:    true,
   });
 
+  adrapid.log = function() {};
 
   // initialize
   (function init() {
@@ -34,10 +35,10 @@ $(function() {
         projects.push(data.templateId);
         // $('#app').append('<div class="template" name="' + data.identifier + '"><img src="' + data.thumbnail + '" style="width: 100%; " /></div>');      
         $('#results').append('<div id="res-' + data.templateId + '" class="res">' + 
-            '<p>Preview for ' + data.identifier + '</p>' +
+            '<div class="content"><p>Preview for ' + data.identifier + ' goes here.</p></div>' +
             '<div id="loader-' + data.templateId + '" class="loader"><div class="throbber throbber_large"></div></div>' +
           '</div>');
-        $('#loader-' + templateId).fadeOut();
+        $('#loader-' + data.templateId).fadeOut();
       });
 
       // generate the form based on rules of the first template...
@@ -55,7 +56,9 @@ $(function() {
     
     // create the form fields
     $.each(rules.fields, function(index, el) {
-      $('#form').append('<div><label for="' + el.name + '">' + el.label + '</label><br><input name="' + el.name + '" value="' + el.default + '" /></div>');
+      if(el.name.indexOf('color') == -1) { // ignore colors
+        $('#form').append('<div><label for="' + el.name + '">' + el.label + '</label><br><input name="' + el.name + '" value="' + el.default + '" /></div>');
+      } 
     });
 
     // add submit button
@@ -95,7 +98,7 @@ $(function() {
 
       // show a preview of the order item
       adrapid.getPreview(data.id).then(function(res) {
-        $('#res-' + templateId).html(res.preview);
+        $('#res-' + templateId + ' .content').html(res.preview);
         $('#loader-' + templateId).fadeOut();
       });
     }, false);

@@ -2,42 +2,25 @@
 <html>
 <head>
 	<title>AdRapid API demo</title>
-	<link rel="stylesheet" type="text/css" href="../assets/style.css">
+	<link rel="stylesheet" type="text/css" href="http://codepen.io/theted/pen/ONaOvZ.css">
+	<!-- <link rel="stylesheet" type="text/css" href="../assets/style.css"> -->
 	<style type="text/css">
-
-		body {
-			display: flex;
-			background: #212121;
-			color: #f9f9f9;
-		}
-
-		#app {
-			display: flex;
-		}
-
-		#results {
-
-		}
 
 		.res {
 			width: 970px;
 			height: 250px;
-			border: 1px solid #ccc;
 			display: flex;
 			position: relative;
 			align-items: center;
 			justify-content: center;
+			padding: 0;
 		}
 
-		.loader {
+		.res .loader {
 			position: absolute;
 			bottom: 0px;
 			right: 0px;
 			padding: 20px;
-		}
-
-		.hidden {
-			opacity: 0.1;
 		}
 
 	</style>
@@ -46,7 +29,16 @@
 <body>
 
 	<div id="app" class="content">
-		<form id="form"></form>
+		<form id="form">
+			<div id="description">
+				<h3>Multiple orders example</h3>
+				<p>This example illustrates how multiple orders for different templates can be sent at the same time.</p>
+
+				<p>Since templates with the same <strong>group</strong> property also shares the same rules/fields, multiple orders for different templates can be sent simultaneously and asynchronously.</p>
+
+				<p>In this example, templates from the <strong>offer</strong> group is used.</p>
+			</div>
+		</form>
 		<div id="results"></div>
 	</div>
 
