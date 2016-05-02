@@ -41,8 +41,8 @@ var AdRapid = function(params) {
 		if(data) params = data;
 		if(!params) params = {}
 
-		log(params, 'Called <strong>' + method + '</strong> method with data:');
-	  
+		if(data && debug) log(data, 'POST -> ' + method);
+
 	  // Return a new promise.
 	  return new Promise(function(resolve, reject) {
 		  $.ajax({  
@@ -52,7 +52,7 @@ var AdRapid = function(params) {
 				headers: { 'Authorization': this.api_key_public }, // cant do this locally
 				success: function(response) {
 					response = jQuery.parseJSON(response);
-					log(response, 'Got result of <strong>' + method + '</strong> method');
+					if(debug) log(response, (data) ? 'POST' : 'GET' + ' -> ' + method);
 	        resolve(response);
 				},
 				error: function(status) {
@@ -64,6 +64,7 @@ var AdRapid = function(params) {
 
 	// a log helper, may be extended to do something else
 	this.log = function(content, title) {
+		if(title) console.log(title + ':');
 		console.log(content);
 	}
 };

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>AdRapid API demo</title>
+	<link rel="stylesheet" type="text/css" href="../assets/style.css">
+	<style type="text/css">
+
+		body {
+			display: flex;
+			background: #212121;
+			color: #f9f9f9;
+		}
+
+		#app {
+			display: flex;
+		}
+
+		#results {
+
+		}
+
+		.res {
+			width: 970px;
+			height: 250px;
+			border: 1px solid #ccc;
+			display: flex;
+			position: relative;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.loader {
+			position: absolute;
+			bottom: 0px;
+			right: 0px;
+			padding: 20px;
+		}
+
+		.hidden {
+			opacity: 0.1;
+		}
+
+	</style>
+
+</head>
+<body>
+
+	<div id="app" class="content">
+		<form id="form"></form>
+		<div id="results"></div>
+	</div>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>	
+	<script src="../assets/adrapid.js"></script> 
+	<script src="app.js"></script>
+</body>
+</html>

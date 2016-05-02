@@ -1,9 +1,9 @@
-/*style.css*/
-
-
 /*
- * reset / base styling
+ * AdRapid API-demo base styling
  */
+
+
+
 html, body, div {
 	padding: 0;
 	margin: 0;
@@ -23,10 +23,6 @@ pre {
 }
 
 
-
-/*
- * app
- */
 #app {
 	width: 100%;
 	min-height: 100vh;
@@ -39,12 +35,7 @@ pre {
 	transition: all 300ms;
 }
 
-
-/*
- * form
- */
 #form {
-	/*background: #333;*/
 	background: #f3f3f3;
 	flex-basis: 25%;
 }
@@ -69,13 +60,9 @@ pre {
 }
 
 
-/*
- * templates
- */
 #templates {
 	background: #444;
 	flex-basis: 45%;
-	/*flex: 1 1 auto;*/
 }
 
 .template {
@@ -84,9 +71,6 @@ pre {
 }
 
 
-/*
- * results
- */
 #results {
 	background: #333;
 	width: 100%;
@@ -100,9 +84,6 @@ pre {
 }
 
 
-/*
- * log
- */
 #log {
 	flex-basis: 15%;
 	min-height: 100%;
@@ -112,10 +93,8 @@ pre {
 	overflow-x: hidden;
 	overflow-y: scroll;
 	transition: all 300ms;
-
   position: absolute;
   width: 700px;
-
 }
 
 #log > .content {
@@ -168,26 +147,13 @@ pre {
 }
 
 
-
-/*
- * spinner
- */
 #spinner {
   display: flex;
-  /*z-index: -1;*/
-  /*width: 100%;*/
-  /*height: 100%;*/
   position: fixed; 
-  /*top:0px;*/
-  
-
   bottom: 40px;
   right: 40px;
-
   align-items: center;
   justify-content: center;
-  /*background: rgba(1, 1, 1, 0.72);*/
-  /*border: 10px solid red !important;*/
   transition: all 350ms;
 }
 
@@ -197,7 +163,6 @@ pre {
 .throbber:after {
   display: block;
   position: relative;
-  /*margin-left: 35% !important;*/
   width: 20px;
   height: 20px;
   animation: rotate 0.6s linear infinite;
@@ -225,9 +190,6 @@ pre {
 
 
 
-/*
- * style the goddamn object
- */
 .iframe_fix object {
   max-height: 300px; 
   width: auto; 
@@ -236,9 +198,6 @@ pre {
 }
 
 
-/*
- * formats
- */
 #formats_dialog {
 	position: absolute;
 	z-index: 500;
