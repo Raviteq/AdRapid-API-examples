@@ -3,7 +3,7 @@ var AdRapid = function(params) {
 	// initialize
 	(function init() {
 		this.api_url 					= params.api_url || 'http://api.adrapid.com/',
-		this.api_key_public 	= params.api_key || 'myAPIkey';
+		this.api_key_public 	= params.api_key || 'myAPIkey',
 		this.debug 						= params.debug || false,
 		this.inspectors 			= [];
 	})();
@@ -41,7 +41,7 @@ var AdRapid = function(params) {
 		if(data) params = data;
 		if(!params) params = {}
 
-		if(data && debug) log(data, 'POST -> ' + method);
+		if(data && debug && typeof(log) == "function") log(data, 'POST -> ' + method);
 
 	  // Return a new promise.
 	  return new Promise(function(resolve, reject) {
@@ -52,9 +52,10 @@ var AdRapid = function(params) {
 				headers: { 'Authorization': this.api_key_public }, // cant do this locally
 				success: function(response) {
 					response = jQuery.parseJSON(response);
-					if(debug) log(response, (data) ? 'POST' : 'GET' + ' -> ' + method);
+					if(debug && typeof(log) == "function") log(response, (data) ? 'POST' : 'GET' + ' -> ' + method);
 	        resolve(response);
 				},
+
 				error: function(status) {
 	        reject(Error(status));
 				}
