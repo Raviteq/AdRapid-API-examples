@@ -1,0 +1,94 @@
+// elements.styl
+
+	
+#app
+	width 100%
+	min-height 100vh
+	display flex
+	flex-wrap wrap
+ 
+
+#templates, #form
+	flex-basis 30%
+
+#results
+	flex-basis 50%
+	flex-grow 1
+
+	
+/*
+ * templates
+ */
+.template
+	cursor pointer
+	
+		
+#description 
+	font-size 100%
+	background #f9f9f9
+	border-bottom 1px solid #e3e3e3
+	color #333
+	
+#form, #results, #templates, #log
+	height 100vh
+	overflow scroll
+
+#form form, #results, #templates, #log, #description
+	padding 1em
+	
+#form
+	background #eee
+
+
+#results
+	background secondaryColor
+		
+.res, .order-item
+	max-width 970px
+	max-height 240px
+	min-width 280px
+	min-height 280px
+	border 1px solid borderColor
+	background #121212
+	valign()
+ 
+#templates {
+	background: #444;
+	padding: 0;
+}
+
+.template {
+	max-width: 33.3%;
+	float: left;
+}
+
+
+	
+#log
+	flex-basis 20%
+	flex-shrink 1
+	background backgroundColor
+	overflow-x hidden
+	overflow-y scroll
+	border 1px solid borderColor
+	
+#show-log
+	width 80px
+	background blue
+	position fixed
+	top 0px
+	right 0px
+	text-align center
+
+
+#target
+	width: 970px;
+	height: 250px;
+	background: rgba(10, 10, 10, 0.2);
+
+#form
+	padding: 20px;
+
+#form input
+	max-width: 95%;
+	margin-bottom: 10px;

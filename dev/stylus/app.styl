@@ -1,0 +1,41 @@
+/*
+ * config
+ */
+backgroundColor = #121212
+secondaryColor = #313131
+borderColor = #333
+textColor = #eee
+altTextColor = #333
+
+
+/*
+ * imports
+ */
+@import './mixins.styl'
+@import './reset.styl'
+@import './forms.styl';
+@import './elements.styl'
+@import './ui.styl';
+
+
+
+/*
+ * temp fixes
+ */
+#app > div
+	flex-grow 1
+	
+	
+form#form 
+	> div
+		padding 1em 0 0 1em
+
+	button
+		margin 1em
+		
+	input, select
+		width 90%
+	
+	#description
+		padding 0 1em
+	
