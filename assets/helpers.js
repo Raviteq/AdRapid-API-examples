@@ -1,7 +1,15 @@
 // frontend helpers for AdRapid API example implementations
 
 var func = function() {};
-var helpers = function() {
+
+var helpers = function(options) {
+
+	// init / setup
+	(function init() {
+		// var api_get = this.api_get; // adrapid.api_get || this.api_get; // TODO: fallback if not defined
+			this.uploadHelper = uploadHelper;
+	})();
+
 
 	// build a form from template rules
 	this.buildForm = function(rules, template, settings) {
@@ -59,12 +67,12 @@ var helpers = function() {
 	}
 
 	// file upload helper
-	this.uploadHelper = function(options) {
+	function uploadHelper(options) {
 
 		// config
     var maxFileSize = 100 * 1000; // 100mb
-    var api_get = adrapid.api_get;
     var file; // global files object
+    var api_get = adrapid.api_get;
 
     // throwerror helper
     function throwError(error) { alert(error); }
@@ -154,20 +162,6 @@ var helpers = function() {
 	  }
 	}
 
-	// get preview function
-	this.get_preview = function(template, format, callback) {
-
-		// extend with options ...
-		// ...
-
-	  // make sure Adobe Edge runtime is loaded before loading html5 banner
-	  this.load_edge(function() {
-	    this.appendEdgeAnimation(data, callback);
-	  });
-
-	}
-
-
 	// add an edge animation to the page
 	this.appendEdgeAnimation = function(data, callback, target) {
 		// create #Stage element if it does not exist
@@ -235,23 +229,20 @@ var helpers = function() {
 	  settings.complete();
 	}
 
+
 	this.addUploadHelpers = function() {
-	  $('input[prop="image"]').each(function() {
-	    var elem = $(this);
-	    var nn = elem.attr('name');
-	    console.log('Add to:' + nn);
-	    $('<div><div id="' + nn + '-temp"></div></div>').insertAfter($(this));
+		$('input[prop="image"]').each(function() {
+	    var elem = $(this), nn = elem.attr('name');
+	    $('<div id="' + nn + '-temp"></div>').insertAfter(elem);
 
 	    // create image upload helper for the element
-	    this.uploadHelper({
+    	uploadHelper({
 	      element: '#' + nn + '-temp',
 	      complete: function(data) {
 	        elem.val(data.thumbnail).trigger('input');
 	      },
 	    });
-
 	  });
-
 	}
 
 

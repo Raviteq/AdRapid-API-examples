@@ -7,8 +7,8 @@ var AdRapid = function(params) {
 
   // log function
   function log(content, title) {
-    console.log('log::');
-    console.log(content);
+    // console.log('log::');
+    // console.log(content);
   }
 
   (function init() {
@@ -23,7 +23,6 @@ var AdRapid = function(params) {
     this.log = params.log || log;
     if(params.log) log = params.log;
   })();
-
 
   var func = function(){};
 
