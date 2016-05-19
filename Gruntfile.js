@@ -13,9 +13,9 @@ module.exports = function(grunt) {
                     pretty: true
                 },
                 files: [ {
-                  cwd: "dev",
+                  cwd: "dev/jade",
                   src: "**/*.jade",
-                  dest: "build",
+                  dest: "",
                   expand: true,
                   ext: ".html"
                 } ]
@@ -36,7 +36,7 @@ module.exports = function(grunt) {
             },
 
             jade: {
-                files: "dev/**/*.jade",
+                files: "dev/jade/**/*.jade",
                 tasks: ['jade'],
             },
 
