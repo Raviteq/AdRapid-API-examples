@@ -139,11 +139,12 @@ var helpers = function() {
   }
 
 
-
   // live banner preview functions
   // ---------------------------------------------------
 
-  function load_edge(callback) {
+  this.load_edge = function(callback) {
+	  var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js';
+	  
 	  if(typeof AdobeEdge == 'undefined') {
 	    $.getScript(edgeSrc, function() {
 	      if(callback) callback();
@@ -154,52 +155,36 @@ var helpers = function() {
 	}
 
 	// get preview function
-	function get_preview(template, format, callback) {
+	this.get_preview = function(template, format, callback) {
+
+		// extend with options ...
+		// ...
 
 	  // make sure Adobe Edge runtime is loaded before loading html5 banner
-	  load_edge(function() {
-
-	    // load the animation for the ad
-	    adrapid.api_get('templates/' + template + '/preview').then(function(data) {
-	      
-	      // create #Stage element if it does not exist
-	      var parts = data.script.split(', ');
-	      var edgeID = parts[1].substring(1, parts[1].length - 1);
-
-	      if(!$('.' + edgeID).length) {
-	        $('#target').append('<div id="Stage" class="' + edgeID + '"></div>');
-	      }
-
-	      // add the script
-	      $('head').append(data.script);
-
-	      if(callback) callback(template);
-	    });
-	    
+	  this.load_edge(function() {
+	    this.appendEdgeAnimation(data, callback);
 	  });
-
-	  addPrev(template);
 
 	}
 
-	function addPrev(template) {
-	  
-	  // get the rules for the template
-	  adrapid.rules(template).then(function(rules) {
 
-	    // create form
-	    helpers.buildForm(rules, false, {
-	      selector: '#the_form',
-	      formats: false,
-	      complete: function() {
-	        previewHelper(); // add bindings to the form
-	        add_upload_helpers(); // add form upload helpers for images
-	      },
-	    });
-	  });
+	// add an edge animation to the page
+	this.appendEdgeAnimation = function(data, callback, target) {
+		// create #Stage element if it does not exist
+    var parts = data.script.split(', ');
+    var edgeID = parts[1].substring(1, parts[1].length - 1);
+
+    if(!$('.' + edgeID).length) {
+      $('#target').append('<div id="Stage" class="' + edgeID + '"></div>');
+    }
+
+    // add the script
+    $('head').append(data.script);
+
+    if(callback) callback();
 	}
 
-	function previewHelper(options) {
+	this.previewHelper = function(options) {
 
 	  // extend options
 	  var settings = $.extend( {
@@ -245,20 +230,20 @@ var helpers = function() {
 
 	  // trigger state change on all text fields to get the correct content in the ad 
 	  setTimeout(function() { $('input[prop=text]').trigger('input'); }, 600);
+	  setTimeout(function() { $('input[prop=text]').trigger('input'); }, 1100);
 
 	  settings.complete();
 	}
 
-
-	function add_upload_helpers() {
+	this.addUploadHelpers = function() {
 	  $('input[prop="image"]').each(function() {
 	    var elem = $(this);
 	    var nn = elem.attr('name');
-
+	    console.log('Add to:' + nn);
 	    $('<div><div id="' + nn + '-temp"></div></div>').insertAfter($(this));
 
 	    // create image upload helper for the element
-	    adrapid.uploadHelper({
+	    this.uploadHelper({
 	      element: '#' + nn + '-temp',
 	      complete: function(data) {
 	        elem.val(data.thumbnail).trigger('input');
