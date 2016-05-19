@@ -1,52 +1,49 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<meta charset="utf-8">
-	<title>AdRapid API demo</title>
-	<link rel="stylesheet" type="text/css" href="../assets/app.css">
-	<link rel="stylesheet" type="text/css" href="../assets/lib/inspector-json.css">
-	<link rel="stylesheet" href="../assets/lib/jquery.minicolors.css">
-</head>
-<body>
-
-	<div id="app" class="content">
-
-		<div id="templates">
-			<div id="description">
-				<h3>Simple example</h3>
-				<p>This is a simple implementation of the AdRapid API. This example illustrates the process of getting a list of available templates, getting rules for a specific template, sending an order, as well as wating for and displaying the resulting ads.</p>
-
-				<p>The log shows the data that is sent to and returned from the API.</p>
-
-				<p>Start by selecting one of the available templates below.</p>
-			</div>
-		</div>
-
-		<div id="form">
-			<form id="the_form">
-				<button class="button send">Send order</button>		
-				<button id="back">Go back</button>
-				<div class="row box" id="form-content"></div>
-				<button class="button send">Send</button>		
-			</form>
-		</div>
-		
-		<div id="results"><h3>Results</h3></div>
-
-		<div id="log"><h3>Log</h3><div class="content"></div></div>
-	</div>
-
-	<div class="hide-debug">Debug</div>
-
-	<div id="spinner" class="loader">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../assets/app.css">
+    <link rel="stylesheet" type="text/css" href="../assets/lib/inspector-json.css">
+    <link rel="stylesheet" type="text/css" href="../assets/lib/jquery.minicolors.css">
+    <title>Simple implementation</title>
+  </head>
+  <body>
+    <!-- main content-->
+    <div id="app" class="content">
+      <div id="templates">
+        <div id="description">
+          <h3>Simple example</h3>
+          <p>This is a simple implementation of the AdRapid API. This example illustrates the process of getting a list of available templates, getting rules for a specific template, sending an order, as well as wating for and displaying the resulting ads.</p>
+          <p>The log shows the data that is sent to and returned from the API.</p>
+          <p>Start by selecting one of the available templates below.</p>
+        </div>
+      </div>
+      <div id="form">
+        <form id="the_form">
+          <button class="button send">Send order</button>
+          <button class="button back">Go back</button>
+          <div id="form-content" class="row box"></div>
+          <button class="button send">Send order</button>
+          <button class="button back">Go back</button>
+        </form>
+      </div>
+      <div id="results">
+        <h3>Results</h3>
+      </div>
+      <div id="log">
+        <div class="content"></div>
+      </div>
+    </div>
+    <div id="spinner" class="loader">
       <div class="throbber throbber_large"></div>
-  </div>
-
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script> 
-	<script src="../assets/lib/inspector-json.js"></script>
-	<script src="../assets/lib/jquery.minicolors.min.js"></script>
-	<script src="../assets/adrapid.js"></script> 
-	<script src="../assets/helpers.js"></script> 
-	<script src="app.js"></script>
-</body>
+    </div>
+    <!-- scripts-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="../assets/adrapid.js"></script>
+    <script src="../assets/helpers.js"></script>
+    <script type="text/javascript" src="../assets/lib/inspector-json.js"></script>
+    <script type="text/javascript" src="../assets/lib/jquery.minicolors.min.js"></script>
+    <script type="text/javascript" src="app.js"></script>
+  </body>
 </html>
