@@ -1,0 +1,40 @@
+doctype
+html
+	head
+		meta(charset='utf-8')
+		meta(name='viewport', content='width=device-width, initial-scale=1')
+		link(rel='stylesheet', type='text/css', href='../assets/app.css')
+
+		block head
+		block title
+			title AdRapid API examples
+	
+
+	body
+
+		// main content
+		block content
+		#app.content
+			
+			#templates
+				#description
+					block description
+					
+			#form
+				block form_content
+
+			#results
+				h3 Results
+				
+			#log
+				.content
+
+		#spinner.loader
+			.throbber.throbber_large
+
+
+		// scripts
+		script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js')
+		script(src='../assets/adrapid.js')
+		script(src='../assets/helpers.js')
+		block scripts
