@@ -1,49 +1,40 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>AdRapid API demo</title>
-	<link rel="stylesheet" type="text/css" href="http://codepen.io/theted/pen/ONaOvZ.css">
-	<!-- <link rel="stylesheet" type="text/css" href="../assets/style.css"> -->
-	<style type="text/css">
-
-		.res {
-			width: 970px;
-			height: 250px;
-			display: flex;
-			position: relative;
-			align-items: center;
-			justify-content: center;
-			padding: 0;
-		}
-
-		.res .loader {
-			position: absolute;
-			bottom: 0px;
-			right: 0px;
-			padding: 20px;
-		}
-
-	</style>
-
-</head>
-<body>
-
-	<div id="app" class="content">
-		<form id="form">
-			<div id="description">
-				<h3>Multiple orders example</h3>
-				<p>This example illustrates how multiple orders for different templates can be sent at the same time.</p>
-
-				<p>Since templates with the same <strong>group</strong> property also shares the same rules/fields, multiple orders for different templates can be sent simultaneously and asynchronously.</p>
-
-				<p>In this example, templates from the <strong>offer</strong> group is used.</p>
-			</div>
-		</form>
-		<div id="results"></div>
-	</div>
-
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>	
-	<script src="../assets/adrapid.js"></script> 
-	<script src="app.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../assets/app.css">
+    <title>Multiple example</title>
+  </head>
+  <body>
+    <!-- main content-->
+    <div id="app" class="content">
+      <div id="templates">
+        <div id="description">
+        </div>
+      </div>
+      <div id="form">
+        <h3>Multiple orders example</h3>
+        <p>This example illustrates how multiple orders for different templates can be sent at the same time.</p></p>
+        <p>Since templates with the same <strong>group</strong> property also shares the same rules/fields, multiple orders for different templates can be sent simultaneously and asynchronously.</p>
+        <p>In this example, templates from the <strong>offer</strong> group is used.</p>
+        <hr>
+        <form id="the_form"></form>
+      </div>
+      <div id="results">
+        <h3>Results</h3>
+      </div>
+      <div id="log">
+        <div class="content"></div>
+      </div>
+    </div>
+    <div id="spinner" class="loader">
+      <div class="throbber throbber_large"></div>
+    </div>
+    <!-- scripts-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="../assets/adrapid.js"></script>
+    <script src="../assets/helpers.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>

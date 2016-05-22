@@ -1,8 +1,7 @@
 $(function() {
   
   // config
-  var api_url     = 'http://test.adrapid.com/api/',
-      api_key     = '6271f323ff24875b74569ebc76eafa7c8ce0aa85', // apidemo @ dev
+  var api_key     = '6271f323ff24875b74569ebc76eafa7c8ce0aa85', // apidemo @ dev
       formats     = 'banner_970x250:google_adwords',            // a predefined banner format
       group       = 'offer',
       projects    = [];
@@ -52,22 +51,25 @@ $(function() {
   function build_form(rules) {
     $.each(rules.fields, function(index, el) {
       if(el.name.indexOf('color') == -1) { // ignore colors
-        $('#form').append('<div><label for="' + el.name + '">' + el.label + '</label><br><input name="' + el.name + '" value="' + el.default + '" /></div>');
+        $('#the_form').append('<div><label for="' + el.name + '">' + el.label + '</label><br><input name="' + el.name + '" value="' + el.default + '" /></div>');
       } 
     });
 
-    $('#form').append('<button id="submit">Send</button'); // add submit button
+    $('#the_form').append('<button id="submit">Send</button'); // add submit button
   }
 
   function bind_actions() {
     $('#submit').click(function(event) {
       event.preventDefault();
 
-      // send an order for every project
+      // send an order for every template
       $.each(projects, function(ins, el) {
-        var order             = $('#form').serializeObject();
+        var order             = $('#the_form').serializeObject();
             order.templateId  = el;
             order.formats     = formats;
+
+            console.log('Send order..');
+            console.log(order);
         
         // send the order
         adrapid.sendOrder(order).then(function(result) {
@@ -92,5 +94,9 @@ $(function() {
       },
     });
   }
+
+
+  $('#templates').hide()
+  $('#results').html('')
 
 });

@@ -1,0 +1,17 @@
+extends ../template.jade
+
+block title
+	title Multiple example
+
+block form_content
+
+	h3 Multiple orders example
+	p This example illustrates how multiple orders for different templates can be sent at the same time.</p>
+
+	p Since templates with the same <strong>group</strong> property also shares the same rules/fields, multiple orders for different templates can be sent simultaneously and asynchronously.
+
+	p In this example, templates from the <strong>offer</strong> group is used.
+
+	hr
+
+	form#the_form
