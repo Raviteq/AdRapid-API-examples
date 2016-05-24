@@ -1,36 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="../assets/app.css">    
-    <title>AdRapid API - Html5 banner live preview demo</title>
-    
-</head>
-<body>
-    <div id="app">
-        <div id="form">
-            <div id="the_form"></div>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../assets/app.css">
+    <title>Html5 live preview</title>
+  </head>
+  <body>
+    <!-- main content-->
+    <div id="app" class="content">
+      <div id="templates">
+        <div id="description">
+          <h3>HTML5 live preview</h3>
+          <p>This example illustrated how dynamic previews can be used.</p>
         </div>
-
-        <div id="templates">
-            <div id="description">
-                <h3>HTML5 banner preview</h3>
-                <p>This example illustrated how dynamic previews can be used</p>
-        
-                
-            </div>
+      </div>
+      <div id="form">
+      </div>
+      <div id="results">
+        <div id="target">
+          <h3>Preview</h3>
         </div>
-
-        <div id="results">
-            <h3>Preview</h3>
-            <div id="target"></div>
-        </div>
-        
+      </div>
     </div>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script> 
-    <script type="text/javascript" src="../assets/adrapid.js"></script>
-    <script type="text/javascript" src="../assets/helpers.js"></script>
-    <script type="text/javascript" src="app.js"></script>
-</body>
+    <div id="spinner" class="loader">
+      <div class="throbber throbber_large"></div>
+    </div>
+    <!-- scripts-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="../assets/adrapid.js"></script>
+    <script src="../assets/helpers.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>

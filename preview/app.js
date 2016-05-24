@@ -1,12 +1,9 @@
-
-  $('#form').hide();
-
+  
   var format = '970x250',
 	    projects = [],
 	    adrapid = new AdRapid('6271f323ff24875b74569ebc76eafa7c8ce0aa85');
 
-
-  // get templates
+  // app initialization
   adrapid.templates()
     .then(filter_templates)
     .then(setup)
@@ -31,19 +28,16 @@
 
   function click_actions() {
     $('.template').click(function(event) {
-      $('#form').show();
-      $('#templates').hide();
-
+      $('#form, #templates').toggle();
+      $('#target').html('<h3>Loading..</h3>');
       var template = $(this).attr('name');
-      var templateId = projects[template];
-
       getForm(template);
-      getLivePreview(templateId);
+      getLivePreview(projects[template]);
     });
   }
 
   function getLivePreview(templateId) {
-    helpers.load_edge(function() { // make sure Adobe Edge runtime is loaded first
+    helpers.loadEdge(function() { // make sure Adobe Edge runtime is loaded first
       adrapid.getPreviewHtml5(templateId) // get the animation content
         .then(helpers.appendEdgeAnimation) // append the banner to the page
         .then(helpers.previewHelper) // bind form events
@@ -58,3 +52,5 @@
       });
     });
   }
+
+  $('#form').hide();
