@@ -1,15 +1,12 @@
 // frontend helpers for AdRapid API example implementations
-
-var func = function() {};
+// Documentation is available at http://raviteq.github.io/adrapid-api/
 
 var helpers = function(options) {
 
-	// init / setup
-	(function init() {
-		// var api_get = this.api_get; // adrapid.api_get || this.api_get; // TODO: fallback if not defined
-			this.uploadHelper = uploadHelper;
-	})();
-
+  // config
+  var func = function() {};
+  this.inspectors = [];
+  this.uploadHelper = uploadHelper;
 
 	// build a form from template rules
 	this.buildForm = function(rules, template, settings) {
@@ -17,6 +14,7 @@ var helpers = function(options) {
 		// setup defaults
     var settings = $.extend( {
       selector: '#form',
+      target: '#target',
       formats: true, // include formats dropdown
       form: '',
       before: func,
@@ -70,10 +68,9 @@ var helpers = function(options) {
 	function uploadHelper(options) {
 
 		// config
-    var maxFileSize = 100 * 1000; // 100mb
     var file; // global files object
-    var api_get = adrapid.api_get;
-
+    var maxFileSize = 100 * 1000; // 100mb
+  
     // throwerror helper
     function throwError(error) { alert(error); }
 
@@ -81,16 +78,13 @@ var helpers = function(options) {
     var settings = $.extend( {
       element: '#form2',
       error: function(error) { throwError(error) },
-      complete: function() {
-        console.log('Completed upload!');
-      },
-      progress: function(event) {
-        console.log('Progress: ' + event);
-      },
+      begin: func,
+      complete: func,
+      progress: func,
       errors: {
-        missingFile: function() { throwError('File missing!') },
-        tooLarge: function() { throwError('Too large!') },
-        wrongMime: function() { throwError('Wrong mime!') },
+        missingFile: function() { throwError('File missing') },
+        tooLarge: function() { throwError('File too large') },
+        wrongMime: function() { throwError('File type not allowe!') },
       },
     }, options);
     
@@ -101,13 +95,17 @@ var helpers = function(options) {
 
     // setup file upload events
     $('input[name="' + str + '-file"]').change(function(event) {
+      settings.begin(str);
       file = event.target.files; // update file data
       var data = new FormData();
 
+      // add file(s)
       $.each(file, function(key, value) {
         data.append(key, value);
       });
 
+      // setup options for using the AdRapid api_get method 
+      // to send the file upload request using AJAX.
       var options = {
         cache       : false,
         processData : false, // Don't process the files
@@ -115,7 +113,7 @@ var helpers = function(options) {
       };
 
       // send the upload request using our formData and custom ajax options
-      api_get('medias', false, data, options).then(function(response) {
+      adrapid.api_get('medias', false, data, options).then(function(response) {
         settings.complete(response[0]);
       });
 
@@ -150,7 +148,7 @@ var helpers = function(options) {
   // live banner preview functions
   // ---------------------------------------------------
 
-  this.load_edge = function(callback) {
+  this.loadEdge = function(callback) {
 	  var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js';
 	  
 	  if(typeof AdobeEdge == 'undefined') {
@@ -169,7 +167,7 @@ var helpers = function(options) {
     var edgeID = parts[1].substring(1, parts[1].length - 1);
 
     if(!$('.' + edgeID).length) {
-      $('#target').append('<div id="Stage" class="' + edgeID + '"></div>');
+      $('#target').html('<div id="Stage" class="' + edgeID + '"></div>');
     }
 
     // add the script
@@ -190,8 +188,11 @@ var helpers = function(options) {
 	  // text fields change
 	  $('input[prop=text]').on('input', function() {
 	    var target = '#Stage__' + $(this).attr('name') + ' p';
-	    if($(target).has("span").length) { target += ' span';} // detect existence of span element
-	    $(target).html($(this).val());
+
+      if($(target + ' font').length) { target += ' font';}
+      if($(target + ' span').length) { target += ' span';}
+
+      $(target).html($(this).val());
 	  });
 
 	  // image fields change
@@ -202,8 +203,11 @@ var helpers = function(options) {
 	  });
 
 	  // color fields change
-	  if(typeof minicolors !== 'undefined' && $.isFunction(minicolors)) {
-	    $('input[prop=color]').minicolors({
+	  // if(typeof minicolors !== 'undefined' && $.isFunction(minicolors)) {
+    // if(typeof minicolors !== 'undefined') {
+      console.log('We got those mini colors!');
+
+      $('input[prop=color]').minicolors({
 	      control: 'wheel',
 	      format: 'rgb',
 	      opacity: true,
@@ -215,12 +219,14 @@ var helpers = function(options) {
 	        $('#Stage__' + target).css('background-color', value);
 	      }
 	    });
-	  } else {
-	    $('input[prop=color]').on('input', function() {
-	      var target = $(this).attr('name');
-	      $('#Stage__' + target).css('background-color', $(this).val());
-	    });
-	  }
+	  // } else {
+   //    console.log('No mini colors!');
+      
+	  //   $('input[prop=color]').on('input', function() {
+	  //     var target = $(this).attr('name');
+	  //     $('#Stage__' + target).css('background-color', $(this).val());
+	  //   });
+	  // }
 
 	  // trigger state change on all text fields to get the correct content in the ad 
 	  setTimeout(function() { $('input[prop=text]').trigger('input'); }, 600);
@@ -253,20 +259,16 @@ var helpers = function(options) {
   this.log = function(content, title) {
   	if(!content) return false;
 
-	  // if content is object, implement code inspector
-	  if(typeof content === 'object') {
-	    var logId = 'log-' + Date.now();
-	    $("#log .content").prepend("<div class=\"log-message\" id=\"" + logId + "\"></div>")
+    var logId = 'log-' + Date.now();
+    $("#log .content").prepend("<div class=\"log-message\" id=\"" + logId + "\"></div>")
 
-	    inspectors.push(new InspectorJSON({
-	      element: logId,
-	      json: content,
-	    }));
+    // add code inspector
+    inspectors.push(new InspectorJSON({
+      element: logId,
+      json: content,
+    }));
 
-	    if(title) $('#log .content').prepend('<div class="log-message">' + title + ':</div>');
-	  } else {
-	    $('#log .content').prepend('<div class="log-message">' + content + '</div>');
-	  }
+    if(title) $('#log .content').prepend('<div class="log-message">' + title + ':</div>');  
   }
 
 };
