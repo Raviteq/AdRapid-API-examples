@@ -1,5 +1,6 @@
-// elements.styl
-
+/*
+ * app elements styling
+ */
 	
 #app
 	width 100%
@@ -7,7 +8,6 @@
 	display flex
 	flex-wrap wrap
  
-
 #templates, #form
 	flex-basis 30%
 
@@ -15,31 +15,73 @@
 	flex-basis 50%
 	flex-grow 1
 
-	
-/*
- * templates
- */
-.template
-	cursor pointer
-	
-		
-#description 
-	font-size 100%
-	background #f9f9f9
-	border-bottom 1px solid #e3e3e3
-	color #333
-	
 #form, #results, #templates, #log
 	height 100vh
 	overflow scroll
 
 #form form, #results, #templates, #log, #description
 	padding 1em
+
+#results
+	padding 2em
+	valign()
+
 	
+
+/*
+ * templates
+ */
+.template
+	cursor pointer
+	margin-bottom -10px
+	
+	img
+		border 1px solid #aaa
+		transition all 500ms
+
+	&:hover 
+		img
+			border 1px solid lighten(borderColor, 10%)
+			opacity 0.7
+
+
+.template.active
+	opacity 0.6
+
+#templates
+	padding 0 !important
+
+.template
+	max-width 33.3%
+	float left
+
+
+/*
+ * description / intro-text
+ */
+#description 
+	font-size 100%
+	background #f9f9f9
+	border-bottom 1px solid borderColor
+	color #333
+	padding 1.2 1em
+
+
+/*
+ * form
+ */
 #form
 	background #eee
+	padding 20px
+
+	input
+		max-width 95%
+		margin-bottom 10px
 
 
+/*
+ * results
+ */
 #results
 	background secondaryColor
 		
@@ -48,47 +90,50 @@
 	max-height 240px
 	min-width 280px
 	min-height 280px
-	border 1px solid borderColor
 	background #121212
 	valign()
- 
-#templates {
-	background: #444;
-	padding: 0;
-}
-
-.template {
-	max-width: 33.3%;
-	float: left;
-}
 
 
-	
+
+/*
+ * log
+ */
 #log
-	flex-basis 20%
-	flex-shrink 1
 	background backgroundColor
 	overflow-x hidden
+	display block
 	overflow-y scroll
-	border 1px solid borderColor
-	
+	border-top 1px solid borderColor
+	transition bottom 400ms ease
+	width 100%
+	height auto
+	// height 400px
+	// position fixed
+	// bottom -400px
+	// left 0px
+	// right 0px
+
 #show-log
 	width 80px
+	height 40px
 	background blue
 	position fixed
-	top 0px
 	right 0px
 	text-align center
+	display block
+	z-index 2000
+	transition bottom 400ms ease
+	display none
+	bottom 0px
 
 
+
+/*
+ * preview thing
+ */
 #target
-	width: 970px;
-	height: 250px;
-	background: rgba(10, 10, 10, 0.2);
-
-#form
-	padding: 20px;
-
-#form input
-	max-width: 95%;
-	margin-bottom: 10px;
+	width 970px
+	height 250px
+	background rgba(10, 10, 10, 0.2)
+	valign()
+	border 1px solid lighten(#111, 10%)
