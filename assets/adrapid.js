@@ -1,14 +1,13 @@
 // AdRapid.js - wrapper for AdRapid public API
 // Documentation is available at http://raviteq.github.io/adrapid-api/
+
 var AdRapid = function(params) {
 
   // initialization
   // ---------------------------------------------------
 
-  // log function
   function log(content, title) {
-    // console.log('log::');
-    // console.log(content);
+    return false; // disabled log
   }
 
   (function init() {
@@ -18,9 +17,6 @@ var AdRapid = function(params) {
     this.api_key_public   = params.api_key || '6271f323ff24875b74569ebc76eafa7c8ce0aa85', // demo API-key
     this.debug            = params.debug || false,
     this.inspectors       = [];
-    
-    // a log helper, may be extended to do something else
-    this.log = params.log || log;
     if(params.log) log = params.log;
   })();
 
@@ -36,8 +32,6 @@ var AdRapid = function(params) {
     if(!params) params = {}
     if(data && debug && typeof(log) == "function") log(data, 'POST -> ' + method);
 
-    log(method);
-
     // Return a new promise.
     return new Promise(function(resolve, reject) {
       var ajaxOptions = {  
@@ -48,11 +42,7 @@ var AdRapid = function(params) {
         crossDomain: true,
         success: function(response) {
           response = jQuery.parseJSON(response);
-          
-          if(typeof(log) == "function")           
-          // if(debug && typeof(log) == "function") 
-           log(response, (data) ? 'POST' : 'GET' + ' -> ' + method);
-          
+          log(response, (data) ? 'POST -> ' + method : 'GET -> ' + method);
           resolve(response);
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -107,7 +97,7 @@ var AdRapid = function(params) {
   }
 
   this.getMedia = function(mediaID) {
-
+    
   }
 
   this.searchMedia = function(arguments) {

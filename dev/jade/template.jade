@@ -8,9 +8,9 @@ html
 		block head
 		block title
 			title AdRapid API examples
-	
 
 	body
+
 
 		// main content
 		block content
@@ -24,11 +24,12 @@ html
 				block form_content
 
 			#results
-				h3 Results
+				block results
+					h3 Results
+			
+			block app_content
 				
-			#log
-				.content
-
+			
 		#spinner.loader
 			.throbber.throbber_large
 
@@ -37,4 +38,6 @@ html
 		script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js')
 		script(src='../assets/adrapid.js')
 		script(src='../assets/helpers.js')
+			
 		block scripts
+			script(src='app.js')
