@@ -203,37 +203,31 @@ var helpers = function(options) {
 	  });
 
 	  // color fields change
-	  // if(typeof minicolors !== 'undefined' && $.isFunction(minicolors)) {
-    // if(typeof minicolors !== 'undefined') {
-      console.log('We got those mini colors!');
-
+	  if(typeof minicolors !== 'undefined' && $.isFunction(minicolors)) {
       $('input[prop=color]').minicolors({
-	      control: 'wheel',
-	      format: 'rgb',
-	      opacity: true,
-	      // changeDelay: 100,
-	      change: function(value, opacity) {
-	        // TODO: changing background or text? 
-	        if(!value) return;    
-	        var target = $(this).attr('name');
-	        $('#Stage__' + target).css('background-color', value);
-	      }
-	    });
-	  // } else {
-   //    console.log('No mini colors!');
+        control: 'wheel',
+        format: 'rgb',
+        opacity: true,
+        change: function(value, opacity) {
+          // TODO: changing background or text? 
+          if(!value) return;    
+          var target = $(this).attr('name');
+          $('#Stage__' + target).css('background-color', value);
+        }
+      });
+    } else {
+      $('input[prop=color]').on('input', function() {
+        var target = $(this).attr('name');
+        $('#Stage__' + target).css('background-color', $(this).val());
+      });
+    }
       
-	  //   $('input[prop=color]').on('input', function() {
-	  //     var target = $(this).attr('name');
-	  //     $('#Stage__' + target).css('background-color', $(this).val());
-	  //   });
-	  // }
+    // trigger state change on all text fields to get the correct content in the ad 
+    setTimeout(function() { $('input[prop=text]').trigger('input'); }, 600);
+    setTimeout(function() { $('input[prop=text]').trigger('input'); }, 1100);
 
-	  // trigger state change on all text fields to get the correct content in the ad 
-	  setTimeout(function() { $('input[prop=text]').trigger('input'); }, 600);
-	  setTimeout(function() { $('input[prop=text]').trigger('input'); }, 1100);
-
-	  settings.complete();
-	}
+    settings.complete();
+  }
 
 
 	this.addUploadHelpers = function() {
