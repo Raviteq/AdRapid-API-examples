@@ -8,10 +8,10 @@ var helpers = function(options) {
   this.inspectors = [];
   this.uploadHelper = uploadHelper;
 
-	// build a form from template rules
-	this.buildForm = function(rules, template, settings) {
-	
-		// setup defaults
+  // build a form from template rules
+  this.buildForm = function(rules, template, settings) {
+  
+    // setup defaults
     var settings = $.extend( {
       selector: '#form',
       target: '#target',
@@ -44,11 +44,11 @@ var helpers = function(options) {
     
     // return rules to next
     return rules; 
-	}
+  }
 
-	// watch order events
-	this.watchOrder = function(options) {
-		adrapid.watch({
+  // watch order events
+  this.watchOrder = function(options) {
+    adrapid.watch({
       order_id: options.order_id,
       init: function() {
         $('.loader').fadeIn();
@@ -62,12 +62,12 @@ var helpers = function(options) {
         $('.loader').fadeOut();
       },
     });
-	}
+  }
 
-	// file upload helper
-	function uploadHelper(options) {
+  // file upload helper
+  function uploadHelper(options) {
 
-		// config
+    // config
     var file; // global files object
     var maxFileSize = 100 * 1000; // 100mb
   
@@ -119,12 +119,12 @@ var helpers = function(options) {
 
     });
 
-	}
+  }
 
 
-	// internal helpers
+  // internal helpers
 
-	function form_formats(formats) {
+  function form_formats(formats) {
     var temp = '<br> <label for="formats">Banner format</label> <br><select name="formats"><br>';
     
     $.each(formats, function(key, format) {
@@ -149,20 +149,20 @@ var helpers = function(options) {
   // ---------------------------------------------------
 
   this.loadEdge = function(callback) {
-	  var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js';
-	  
-	  if(typeof AdobeEdge == 'undefined') {
-	    $.getScript(edgeSrc, function() {
-	      if(callback) callback();
-	    });
-	  } else {
-	    if(callback) callback();
-	  }
-	}
+    var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js';
+    
+    if(typeof AdobeEdge == 'undefined') {
+      $.getScript(edgeSrc, function() {
+        if(callback) callback();
+      });
+    } else {
+      if(callback) callback();
+    }
+  }
 
-	// add an edge animation to the page
-	this.appendEdgeAnimation = function(data, callback, target) {
-		// create #Stage element if it does not exist
+  // add an edge animation to the page
+  this.appendEdgeAnimation = function(data, callback, target) {
+    // create #Stage element if it does not exist
     var parts = data.script.split(', ');
     var edgeID = parts[1].substring(1, parts[1].length - 1);
 
@@ -174,36 +174,36 @@ var helpers = function(options) {
     $('head').append(data.script);
 
     if(callback) callback();
-	}
+  }
 
-	this.previewHelper = function(options) {
+  this.previewHelper = function(options) {
 
-	  // extend options
-	  var settings = $.extend( {
-	    selector: '',
-	    complete: function() {},
-	    load: function() {}
-	  }, options);
+    // extend options
+    var settings = $.extend( {
+      selector: '',
+      complete: function() {},
+      load: function() {}
+    }, options);
 
-	  // text fields change
-	  $('input[prop=text]').on('input', function() {
-	    var target = '#Stage__' + $(this).attr('name') + ' p';
+    // text fields change
+    $('input[prop=text]').on('input', function() {
+      var target = '#Stage__' + $(this).attr('name') + ' p';
 
       if($(target + ' font').length) { target += ' font';}
       if($(target + ' span').length) { target += ' span';}
 
       $(target).html($(this).val());
-	  });
+    });
 
-	  // image fields change
-	  $('input[prop=image]').on('input', function() {
-	    var target = '#Stage_' + $(this).attr('name');
-	    var val = $(this).val();
-	    $(target).css('background-image', 'url("' + val + '")');
-	  });
+    // image fields change
+    $('input[prop=image]').on('input', function() {
+      var target = '#Stage_' + $(this).attr('name');
+      var val = $(this).val();
+      $(target).css('background-image', 'url("' + val + '")');
+    });
 
-	  // color fields change
-	  if(typeof minicolors !== 'undefined' && $.isFunction(minicolors)) {
+    // color fields change
+    if(typeof minicolors !== 'undefined' && $.isFunction(minicolors)) {
       $('input[prop=color]').minicolors({
         control: 'wheel',
         format: 'rgb',
@@ -230,28 +230,28 @@ var helpers = function(options) {
   }
 
 
-	this.addUploadHelpers = function() {
-		$('input[prop="image"]').each(function() {
-	    var elem = $(this), nn = elem.attr('name');
-	    $('<div id="' + nn + '-temp"></div>').insertAfter(elem);
+  this.addUploadHelpers = function() {
+    $('input[prop="image"]').each(function() {
+      var elem = $(this), nn = elem.attr('name');
+      $('<div id="' + nn + '-temp"></div>').insertAfter(elem);
 
-	    // create image upload helper for the element
-    	uploadHelper({
-	      element: '#' + nn + '-temp',
-	      complete: function(data) {
-	        elem.val(data.thumbnail).trigger('input');
-	      },
-	    });
-	  });
-	}
+      // create image upload helper for the element
+      uploadHelper({
+        element: '#' + nn + '-temp',
+        complete: function(data) {
+          elem.val(data.thumbnail).trigger('input');
+        },
+      });
+    });
+  }
 
 
-	// other test functions, may be removed
-	// --------------------------------------------------------
+  // other test functions, may be removed
+  // --------------------------------------------------------
 
   // a log function
   this.log = function(content, title) {
-  	if(!content) return false;
+    if(!content) return false;
 
     var logId = 'log-' + Date.now();
     $("#log .content").prepend("<div class=\"log-message\" id=\"" + logId + "\"></div>")
