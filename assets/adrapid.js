@@ -32,14 +32,12 @@ var AdRapid = function(params) {
     if(!params) params = {}
     if(data && debug && typeof(log) == "function") log(data, 'POST -> ' + method);
 
-    // Return a new promise.
     return new Promise(function(resolve, reject) {
       var ajaxOptions = {  
         type: (data) ? 'POST' : 'GET',
         url: this.api_url + method,
         data: params,
         headers: { 'Authorization': this.api_key_public },
-        crossDomain: true,
         success: function(response) {
           response = jQuery.parseJSON(response);
           log(response, (data) ? 'POST -> ' + method : 'GET -> ' + method);
@@ -92,20 +90,19 @@ var AdRapid = function(params) {
     return this.api_get('templates/' + template + '/preview');
   }
 
+  // upload media
   this.addMedia = function(file, options) {
     return this.api_get('medias', false, file);
   }
 
+  // get media
   this.getMedia = function(mediaID) {
-    
+    return this.api_get('medias/' + mediaID); 
   }
 
-  this.searchMedia = function(arguments) {
-
-  }
-
-  this.mediaInCategory = function(arguments) {
-
+  // list media
+  this.listMedia = function() {
+    return this.api_get('medias');
   }
 
 
