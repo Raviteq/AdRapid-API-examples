@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../assets/app.css">
+    <link rel="stylesheet" type="text/css" href="../assets/lib/jquery.imgareaselect-0.9.10/css/imgareaselect-animated.css">
+    <title>Image crop example</title>
+  </head>
+  <body>
+    <!-- main content-->
+    <div id="app" class="content">
+      <div id="templates">
+        <div id="description">
+          <h3>Image crop example</h3>
+          <p>Sample implementation of the image crop functionality.</p>
+          <p>Documentation is available <a href="http://raviteq.github.io/adrapid-api/#upload">http://raviteq.github.io/adrapid-api/#upload</a></p>
+          <p>This perticular example is using the <a href="http://odyniec.net/projects/imgareaselect/usage.html">imgAreaSelect</a> library for the crop tool frontend.</p>
+          <form id="crop_form">
+            <p>These values will be posted to the crop method. In a real-world scenario, the form field will be hidden for the end user. We keep track of the width of the thumbnail to be able to send crop values as percentages.</p>
+            <input name="image" value="http://test.adrapid.com/uploads/client_uploads/demo/img//b8acce_carina_nebula_thumb.jpg" placeholder="image">
+            <input name="x" placeholder="x">
+            <input name="y" placeholder="y">
+            <input name="width" placeholder="width">
+            <input name="height" placeholder="height">
+          </form>
+          <form id="extra">
+            <p>These values are for illustrative purposes only</p>
+            <input name="thumbnail_width" placeholder="thumbnail_width">
+            <input name="x1_" placeholder="x1">
+            <input name="y1_" placeholder="y1">
+            <input name="x2_" placeholder="x2">
+            <input name="y2_" placeholder="y2">
+            <input name="width_" placeholder="width">
+            <input name="height_" placeholder="height">
+            <input name="x2_relative" placeholder="x2_relative">
+            <input name="y2_relative" placeholder="y2_relative">
+          </form>
+        </div>
+      </div>
+      <div id="results">
+        <div class="flex">
+          <div class="box"><img id="cropzone" src="http://test.adrapid.com/uploads/client_uploads/demo/img//b8acce_carina_nebula_thumb.jpg">
+            <button id="crop-button">Crop!</button>
+          </div>
+          <div class="box"><img id="preview"></div>
+        </div>
+      </div>
+    </div>
+    <div id="spinner" class="loader">
+      <div class="throbber throbber_large"></div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="../assets/adrapid.js"></script>
+    <script src="../assets/helpers.js"></script>
+    <script type="text/javascript" src="../assets/lib/jquery.imgareaselect-0.9.10/jquery.imgareaselect.min.js"></script>
+    <script type="text/javascript">
+      var adrapid = new AdRapid('6271f323ff24875b74569ebc76eafa7c8ce0aa85');
+      var width = $('#cropzone').width();
+      
+      // initialize cropzone
+      var ias = $('#cropzone').imgAreaSelect({ 
+        fadeSpeed: 450, 
+        handles: true,
+        instance: true,
+        // aspectRatio: '1:1', // lock aspect ratio 
+        // x1: 10, y1: 10, x2: 310, y2: 310, // set initial selection
+      
+        onInit: function (img, selection) {
+          console.log('Init!');
+          //- set_selection(selection, img);
+        },
+      
+        onCancelSelection: function (img) {
+          console.log('Was canceled');
+          $('input').val('');
+        },
+      
+        // NOTE: dont do this calculation every time, only need to do it on select end.
+        onSelectChange: function (img, selection) {
+          set_selection(selection, img);
+        },
+      
+        onSelectEnd: function(img, selection) {
+          set_selection(selection, img);
+        }
+      
+      });
+      
+      // cropzone helper functions
+      function set_selection(selection, img) {
+        width = $('#cropzone').width();
+      
+        // neccessarry to set these values
+        $('input[name=x]').val(getPercentage(selection.x1));
+        $('input[name=y]').val(getPercentage(selection.y1));
+        $('input[name=width]').val(getPercentage(selection.width));
+        $('input[name=height]').val(getPercentage(selection.height));
+        $('input[name=thumbnail_width]').val(width);
+      
+        // for demo purposes only      
+        $('input[name=x1_]').val(selection.x1);
+        $('input[name=x2_]').val(selection.x2);
+        $('input[name=y1_]').val(selection.y1);
+        $('input[name=y2_]').val(selection.y2);
+        $('input[name=width_]').val(selection.width);
+        $('input[name=height_]').val(selection.height);
+        $('input[name=x2_relative]').val(getPercentage(selection.x2));
+        $('input[name=y2_relative]').val(getPercentage(selection.y2));
+      }
+      
+      function getPercentage(part, full) {
+        if(!full) full = width;
+        return parseFloat((part / full) * 100).toFixed(2) + '%';
+      }
+      
+      function perform_crop() {
+        var data = $('#crop_form').serializeArray();
+        $('#spinner').fadeIn();
+      
+        // ias.cancelSelection();
+        console.log('SEND DATA:');
+        console.log($('#crop_form').serializeObject());
+      
+        helpers.uploadMedia(data).then(function(result) {
+          $('#preview').attr('src', result.image.thumbnail);
+          $('#spinner').fadeOut();
+        });
+      }
+      
+      $('#crop-button').click(function(e) {
+        perform_crop();      
+      });
+    </script>
+  </body>
+</html>

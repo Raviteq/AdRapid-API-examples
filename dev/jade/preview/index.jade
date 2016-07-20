@@ -1,0 +1,19 @@
+extends ../template.jade
+
+block title
+	title Html5 live preview
+
+block description
+	h3 HTML5 live preview
+	p This example illustrated how dynamic previews can be used.
+
+block results
+	#target
+		h3 Preview
+
+block head
+	link(rel="stylesheet", type="text/css", href="../assets/lib/jquery.minicolors.css")
+
+block scripts
+	script(type="text/javascript", src="../assets/lib/jquery.minicolors.min.js")
+	script(type="text/javascript", src="app.js")
