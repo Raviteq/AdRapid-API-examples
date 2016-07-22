@@ -13,34 +13,80 @@
       <div id="templates">
         <div id="description">
           <h3>Image crop example</h3>
-          <p>Sample implementation of the image crop functionality.</p>
-          <p>Documentation is available <a href="http://raviteq.github.io/adrapid-api/#upload">http://raviteq.github.io/adrapid-api/#upload</a></p>
-          <p>This perticular example is using the <a href="http://odyniec.net/projects/imgareaselect/usage.html">imgAreaSelect</a> library for the crop tool frontend.</p>
+          <p>Sample implementation of the image crop functionality. Documentation is available <a href="http://raviteq.github.io/adrapid-api/#crop">http://raviteq.github.io/adrapid-api/#crop</a>. This perticular example is using the <a href="http://odyniec.net/projects/imgareaselect/usage.html">imgAreaSelect</a> library for the crop tool frontend.</p>
+          <div class="bordered">
+            <p>Upload an image</p>
+            <div id="upload"></div>
+            <p>...or select an image</p>
+            <select name="switch"></select>
+          </div>
           <form id="crop_form">
             <p>These values will be posted to the crop method. In a real-world scenario, the form field will be hidden for the end user. We keep track of the width of the thumbnail to be able to send crop values as percentages.</p>
-            <input name="image" value="http://test.adrapid.com/uploads/client_uploads/demo/img//b8acce_carina_nebula_thumb.jpg" placeholder="image">
-            <input name="x" placeholder="x">
-            <input name="y" placeholder="y">
-            <input name="width" placeholder="width">
-            <input name="height" placeholder="height">
+            <div>
+              <label for="image">Image</label>
+              <input name="image" value="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img//1c1e3a_Purple-Flower-7.jpg" placeholder="image">
+            </div>
+            <div>
+              <label for="x">X</label>
+              <input name="x" placeholder="x">
+            </div>
+            <div>
+              <label for="y">Y</label>
+              <input name="y" placeholder="y">
+            </div>
+            <div>
+              <label for="width">Width</label>
+              <input name="width" placeholder="width">
+            </div>
+            <div>
+              <label for="height">Height</label>
+              <input name="height" placeholder="height">
+            </div>
           </form>
-          <form id="extra">
+          <form id="extra" class="full">
             <p>These values are for illustrative purposes only</p>
-            <input name="thumbnail_width" placeholder="thumbnail_width">
-            <input name="x1_" placeholder="x1">
-            <input name="y1_" placeholder="y1">
-            <input name="x2_" placeholder="x2">
-            <input name="y2_" placeholder="y2">
-            <input name="width_" placeholder="width">
-            <input name="height_" placeholder="height">
-            <input name="x2_relative" placeholder="x2_relative">
-            <input name="y2_relative" placeholder="y2_relative">
+            <div>
+              <label for="thumbnail_width">Thumbnail width</label>
+              <input name="thumbnail_width" placeholder="thumbnail_width">
+            </div>
+            <div>
+              <label for="x1_">X1</label>
+              <input name="x1_" placeholder="x1">
+            </div>
+            <div>
+              <label for="y1_">Y1</label>
+              <input name="y1_" placeholder="y1">
+            </div>
+            <div>
+              <label for="x2_">X2</label>
+              <input name="x2_" placeholder="x2">
+            </div>
+            <div>
+              <label for="y2_">Y2</label>
+              <input name="y2_" placeholder="y2">
+            </div>
+            <div>
+              <label for="width_">Width (px)</label>
+              <input name="width_" placeholder="width">
+            </div>
+            <div>
+              <label for="height_">Height (px)</label>
+              <input name="height_" placeholder="height">
+            </div>
+            <div>
+              <label for="x2_relative">X2 (relative)</label>
+              <input name="x2_relative" placeholder="x2_relative">
+            </div>
+            <div>
+              <label for="y2_relative">Y2 (relative)</label>
+              <input name="y2_relative" placeholder="y2_relative">
+            </div>
           </form>
         </div>
       </div>
       <div id="results">
         <div class="flex">
-          <div class="box"><img id="cropzone" src="http://test.adrapid.com/uploads/client_uploads/demo/img//b8acce_carina_nebula_thumb.jpg">
+          <div class="box"><img id="cropzone" src="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img//1c1e3a_Purple-Flower-7.jpg">
             <button id="crop-button">Crop!</button>
           </div>
           <div class="box"><img id="preview"></div>
@@ -54,26 +100,25 @@
     <script src="../assets/adrapid.js"></script>
     <script src="../assets/helpers.js"></script>
     <script type="text/javascript" src="../assets/lib/jquery.imgareaselect-0.9.10/jquery.imgareaselect.min.js"></script>
+    <script type="text/javascript" src="../assets/lib/imagesloaded.pkgd.min.js"></script>
     <script type="text/javascript">
       var adrapid = new AdRapid('6271f323ff24875b74569ebc76eafa7c8ce0aa85');
       var width = $('#cropzone').width();
+      var height = $('#cropzone').height();
       
+      
+        
       // initialize cropzone
-      var ias = $('#cropzone').imgAreaSelect({ 
+      var cropTool = $('#cropzone').imgAreaSelect({ 
         fadeSpeed: 450, 
         handles: true,
         instance: true,
+        x1: width/4, y1: height/4, x2: width-(width/4), y2: height-(height/4), // set initial selection
         // aspectRatio: '1:1', // lock aspect ratio 
-        // x1: 10, y1: 10, x2: 310, y2: 310, // set initial selection
       
         onInit: function (img, selection) {
-          console.log('Init!');
-          //- set_selection(selection, img);
-        },
-      
-        onCancelSelection: function (img) {
-          console.log('Was canceled');
-          $('input').val('');
+          console.log('Set initial selection...');
+          set_selection(selection, img);
         },
       
         // NOTE: dont do this calculation every time, only need to do it on select end.
@@ -111,19 +156,21 @@
       
       function getPercentage(part, full) {
         if(!full) full = width;
-        return parseFloat((part / full) * 100).toFixed(2) + '%';
+        return parseFloat((part / full) * 100).toFixed(4) + '%';
+        //- return Math.round((part / full) * 100) + '%';
       }
       
       function perform_crop() {
         var data = $('#crop_form').serializeArray();
         $('#spinner').fadeIn();
       
-        // ias.cancelSelection();
-        console.log('SEND DATA:');
+        // cropTool.cancelSelection(); // remove selection
+      
+        console.log('Sending crop request with data:');
         console.log($('#crop_form').serializeObject());
       
         helpers.uploadMedia(data).then(function(result) {
-          $('#preview').attr('src', result.image.thumbnail);
+          $('#preview').attr('src', result.image.preview);
           $('#spinner').fadeOut();
         });
       }
@@ -131,6 +178,60 @@
       $('#crop-button').click(function(e) {
         perform_crop();      
       });
-    </script>
+      
+      
+      // init a image select function
+      var images = {
+        'Flower': 'http://test.adrapid.com/uploads/client_uploads/demo/img/180bf8_Purple-Flower-7_preview.jpg',
+        '> 100MP galaxy': 'http://test.adrapid.com/uploads/client_uploads/demo/img/7c7c52_carina_nebula_preview.jpg',
+        'Overlays': 'http://test.adrapid.com/uploads/client_uploads/demo/img/681b75_Lightroom-Crop-Grid-Overlay_preview.jpg',
+      };
+      
+      var output = [];
+      
+      $.each(images, function(val, key) {
+        output.push('<option value="' + key + '">' + val + '</option>');
+      });
+      
+      $('select[name=switch]').html(output.join(''));
+      
+      $('select[name=switch]').change(function(event) {
+        var val = $(this).val();
+        $('#cropzone').attr('src', val);
+        $('input[name=image]').val(val);
+        cropTool.update(); // re-draw cropTool selection, preventing issues if the ratio of the image has changed
+      });
+      
+      // trigger select on the first value
+      //- $('select[name=switch]').trigger('change');
+      
+      // attach a file upload helper
+      helpers.uploadHelper({
+        element: '#upload',
+        begin: function() {
+          $('#spinner').fadeIn();
+        },
+        complete: function(data) {
+          $('#spinner').fadeOut();
+          $('#cropzone').attr('src', data.preview);
+          $('input[name=image]').val(data.preview);
+        },
+      });
+      
+      function setCropInitial() {
+        // TODO: preserve selected area
+        //- var current = cropTool.getSelection();
+        //- console.log(current);
+        
+        width = $('#cropzone').width();
+        height = $('#cropzone').height();
+        cropTool.setSelection(width/4, height/4, width-(width/4), height-(height/4), true).update();
+      }
+      
+      $(window).resize(function() {
+        setCropInitial();
+      });
+      
+    </script>});
   </body>
 </html>
