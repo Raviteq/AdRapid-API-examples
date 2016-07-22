@@ -15,10 +15,28 @@
           <h3>Image crop example</h3>
           <p>Sample implementation of the image crop functionality. Documentation is available <a href="http://raviteq.github.io/adrapid-api/#crop">http://raviteq.github.io/adrapid-api/#crop</a>. This perticular example is using the <a href="http://odyniec.net/projects/imgareaselect/usage.html">imgAreaSelect</a> library for the crop tool frontend.</p>
           <div class="bordered">
-            <p>Upload an image</p>
-            <div id="upload"></div>
-            <p>...or select an image</p>
-            <select name="switch"></select>
+            <div>
+              <label>Upload an image</label>
+              <div id="upload"></div>
+            </div>
+            <div>
+              <label>...or select an image</label>
+              <select name="switch">
+                <option value="http://test.adrapid.com/uploads/client_uploads/demo/img/180bf8_Purple-Flower-7_preview.jpg">Flower</option>
+                <option value="http://test.adrapid.com/uploads/client_uploads/demo/img/7c7c52_carina_nebula_preview.jpg">> 100MP galaxy</option>
+                <option value="http://test.adrapid.com/uploads/client_uploads/demo/img/681b75_Lightroom-Crop-Grid-Overlay_preview.jpg">Overlays</option>
+              </select>
+            </div>
+            <div>
+              <label>set aspect ratio</label>
+              <select name="ratio">
+                <option value="">Any</option>
+                <option value="1:1">1:1</option>
+                <option value="1:3">1:3</option>
+                <option value="3:1">3:1</option>
+                <option value="2:1">2:1</option>
+              </select>
+            </div>
           </div>
           <form id="crop_form">
             <p>These values will be posted to the crop method. In a real-world scenario, the form field will be hidden for the end user. We keep track of the width of the thumbnail to be able to send crop values as percentages.</p>
@@ -109,12 +127,6 @@
       var width = $('#cropzone').width();
       var height = $('#cropzone').height();
       var pixel = 'http://test.adrapid.com/img/assets/pixel.png';
-      var output = [];
-      var images = {
-        'Flower': 'http://test.adrapid.com/uploads/client_uploads/demo/img/180bf8_Purple-Flower-7_preview.jpg',
-        '> 100MP galaxy': 'http://test.adrapid.com/uploads/client_uploads/demo/img/7c7c52_carina_nebula_preview.jpg',
-        'Overlays': 'http://test.adrapid.com/uploads/client_uploads/demo/img/681b75_Lightroom-Crop-Grid-Overlay_preview.jpg',
-      };
         
       // Initialize the crop tool
       // This perticular example is using imgAreaSelect.
@@ -197,12 +209,6 @@
       // create an image select function
       ////////////////////////////////////////////////////
       
-      $.each(images, function(val, key) {
-        output.push('<option value="' + key + '">' + val + '</option>');
-      });
-      
-      $('select[name=switch]').html(output.join(''));
-      
       $('select[name=switch]').change(function(event) {
         var val = $(this).val();
         $('#cropzone').attr('src', val);
@@ -212,7 +218,7 @@
       });
       
       // trigger select on the first value
-      //- $('select[name=switch]').trigger('change');
+      $('select[name=switch]').trigger('change');
       
       // attach a file upload helper
       ////////////////////////////////////////////////////
@@ -229,6 +235,16 @@
           $('#preview').attr('src', pixel); // remove crop preview image
           cropTool.update(); // re-calculate cropTool area since aspect ratio may have changed since last image
         },
+      });
+      
+      // handle aspect ratio change
+      ////////////////////////////////////////////////////
+      
+      $('select[name=ratio]').change(function(event) {
+        cropTool.setOptions({
+          aspectRatio: $(this).val()
+        })
+        .update();
       });
       
       // handle browser window resize
