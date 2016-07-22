@@ -8,6 +8,14 @@ var helpers = function(options) {
   this.inspectors = [];
   this.uploadHelper = uploadHelper;
 
+  // setup options for using the AdRapid api_get method 
+  // to send the file upload request using AJAX.
+  var uploadOptions = {
+    cache       : false, // Don't cache
+    processData : false, // Don't process the files
+    contentType : false, // Set content type to false as jQuery will tell the server its a query string request
+  };
+
   // build a form from template rules
   this.buildForm = function(rules, template, settings) {
   
@@ -104,16 +112,8 @@ var helpers = function(options) {
         data.append(key, value);
       });
 
-      // setup options for using the AdRapid api_get method 
-      // to send the file upload request using AJAX.
-      var options = {
-        cache       : false,
-        processData : false, // Don't process the files
-        contentType : false, // Set content type to false as jQuery will tell the server its a query string request
-      };
-
       // send the upload request using our formData and custom ajax options
-      adrapid.api_get('medias', false, data, options).then(function(response) {
+      adrapid.api_get('medias', false, data, uploadOptions).then(function(response) {
         settings.complete(response[0]);
       });
 
@@ -203,22 +203,19 @@ var helpers = function(options) {
     });
 
     // color fields change
-    if(typeof minicolors !== 'undefined' && $.isFunction(minicolors)) {
+    if(typeof minicolors !== 'undefined') {
       $('input[prop=color]').minicolors({
         control: 'wheel',
         format: 'rgb',
         opacity: true,
         change: function(value, opacity) {
-          // TODO: changing background or text? 
           if(!value) return;    
-          var target = $(this).attr('name');
-          $('#Stage__' + target).css('background-color', value);
+          changeColor($(this).attr('name'), $(this).val());
         }
       });
     } else {
       $('input[prop=color]').on('input', function() {
-        var target = $(this).attr('name');
-        $('#Stage__' + target).css('background-color', $(this).val());
+        changeColor($(this).attr('name'), $(this).val());
       });
     }
       
@@ -227,6 +224,16 @@ var helpers = function(options) {
     setTimeout(function() { $('input[prop=text]').trigger('input'); }, 1100);
 
     settings.complete();
+  }
+
+  function changeColor(target, color) {
+    if(target == 'color_text_field1') {
+      $('#Stage div, #Stage p').css('color', color);
+    } else if(target == 'color_background') {
+      $('#Stage').css('background-color', color);
+    } else {
+      $('#Stage__' + target).css('background-color', color);
+    }
   }
 
 
@@ -243,6 +250,10 @@ var helpers = function(options) {
         },
       });
     });
+  }
+
+  this.uploadMedia = function(data, callback) {
+    return adrapid.api_get('medias', false, data);
   }
 
 
