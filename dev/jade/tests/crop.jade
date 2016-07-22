@@ -131,7 +131,6 @@ block scripts
       handles: true,
       instance: true,
       x1: width/4, y1: height/4, x2: width-(width/4), y2: height-(height/4), // set initial selection
-      // aspectRatio: '1:1', // lock aspect ratio 
 
       onInit: function (img, selection) {
         console.log('Set initial selection...');
@@ -153,24 +152,27 @@ block scripts
 
     // cropzone helper functions
     function set_selection(selection, img) {
-      width = $('#cropzone').width(); // re-calculate width of thumbnail - user may have resized the window
+      
+      // re-calculate dimensions of thumbnail - user may have resized the window
+      width = $('#cropzone').width(); 
+      height = $('#cropzone').height();
 
       // neccessarry to set these values
-      $('input[name=x]').val(getPercentage(selection.x1));
-      $('input[name=y]').val(getPercentage(selection.y1));
-      $('input[name=width]').val(getPercentage(selection.width));
-      $('input[name=height]').val(getPercentage(selection.height));
+      $('input[name=x]').val(getPercentage(selection.x1, width));
+      $('input[name=y]').val(getPercentage(selection.y1, height));
+      $('input[name=width]').val(getPercentage(selection.width, width));
+      $('input[name=height]').val(getPercentage(selection.height, height));
       $('input[name=thumbnail_width]').val(width);
 
-      // for demo purposes only      
+      // for demo purposes only
       $('input[name=x1_]').val(selection.x1);
       $('input[name=x2_]').val(selection.x2);
       $('input[name=y1_]').val(selection.y1);
       $('input[name=y2_]').val(selection.y2);
       $('input[name=width_]').val(selection.width);
       $('input[name=height_]').val(selection.height);
-      $('input[name=x2_relative]').val(getPercentage(selection.x2));
-      $('input[name=y2_relative]').val(getPercentage(selection.y2));
+      $('input[name=x2_relative]').val(getPercentage(selection.x2, width));
+      $('input[name=y2_relative]').val(getPercentage(selection.y2, height));
     }
 
     function getPercentage(part, full) {

@@ -104,11 +104,10 @@
       </div>
       <div id="results">
         <div class="flex">
-          <div class="box"><img id="cropzone" src="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img//1c1e3a_Purple-Flower-7.jpg">
-            <button id="crop-button">Crop!</button>
-          </div>
+          <div class="box"><img id="cropzone" src="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img//1c1e3a_Purple-Flower-7.jpg"></div>
           <div class="box"><a id="show" href="#" target="_blank"><img id="preview"></a></div>
         </div>
+        <button id="crop-button">Crop!</button>
       </div>
     </div>
     <div id="spinner" class="loader">
@@ -138,7 +137,6 @@
         handles: true,
         instance: true,
         x1: width/4, y1: height/4, x2: width-(width/4), y2: height-(height/4), // set initial selection
-        // aspectRatio: '1:1', // lock aspect ratio 
       
         onInit: function (img, selection) {
           console.log('Set initial selection...');
@@ -160,24 +158,27 @@
       
       // cropzone helper functions
       function set_selection(selection, img) {
-        width = $('#cropzone').width(); // re-calculate width of thumbnail - user may have resized the window
+        
+        // re-calculate dimensions of thumbnail - user may have resized the window
+        width = $('#cropzone').width(); 
+        height = $('#cropzone').height();
       
         // neccessarry to set these values
-        $('input[name=x]').val(getPercentage(selection.x1));
-        $('input[name=y]').val(getPercentage(selection.y1));
-        $('input[name=width]').val(getPercentage(selection.width));
-        $('input[name=height]').val(getPercentage(selection.height));
+        $('input[name=x]').val(getPercentage(selection.x1, width));
+        $('input[name=y]').val(getPercentage(selection.y1, height));
+        $('input[name=width]').val(getPercentage(selection.width, width));
+        $('input[name=height]').val(getPercentage(selection.height, height));
         $('input[name=thumbnail_width]').val(width);
       
-        // for demo purposes only      
+        // for demo purposes only
         $('input[name=x1_]').val(selection.x1);
         $('input[name=x2_]').val(selection.x2);
         $('input[name=y1_]').val(selection.y1);
         $('input[name=y2_]').val(selection.y2);
         $('input[name=width_]').val(selection.width);
         $('input[name=height_]').val(selection.height);
-        $('input[name=x2_relative]').val(getPercentage(selection.x2));
-        $('input[name=y2_relative]').val(getPercentage(selection.y2));
+        $('input[name=x2_relative]').val(getPercentage(selection.x2, width));
+        $('input[name=y2_relative]').val(getPercentage(selection.y2, height));
       }
       
       function getPercentage(part, full) {
@@ -244,7 +245,7 @@
         cropTool.setOptions({
           aspectRatio: $(this).val()
         })
-        .update();
+        cropTool.update();
       });
       
       // handle browser window resize
@@ -258,7 +259,8 @@
         
         width = $('#cropzone').width();
         height = $('#cropzone').height();
-        cropTool.setSelection(width/4, height/4, width-(width/4), height-(height/4), true).update();
+        cropTool.setSelection(width/4, height/4, width-(width/4), height-(height/4), true);
+        cropTool.update();
       }
       
       $(window).resize(function() {
