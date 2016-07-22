@@ -88,7 +88,8 @@ block results
       img#cropzone(src="#{image}")
       button#crop-button Crop!
     .box
-      img#preview
+      a#show(href='#', target='_blank')
+        img#preview
 
 block form
 
@@ -96,13 +97,26 @@ block scripts
   script(type="text/javascript", src="../assets/lib/jquery.imgareaselect-0.9.10/jquery.imgareaselect.min.js")
   script(type="text/javascript", src="../assets/lib/imagesloaded.pkgd.min.js")
   script(type="text/javascript").
-    var adrapid = new AdRapid('6271f323ff24875b74569ebc76eafa7c8ce0aa85');
+    
+    // config
+    ////////////////////////////////////////////////////
+
+    var adrapid = new AdRapid('6271f323ff24875b74569ebc76eafa7c8ce0aa85'); // initialize AdRapid
     var width = $('#cropzone').width();
     var height = $('#cropzone').height();
-
-
+    var pixel = 'http://test.adrapid.com/img/assets/pixel.png';
+    var output = [];
+    var images = {
+      'Flower': 'http://test.adrapid.com/uploads/client_uploads/demo/img/180bf8_Purple-Flower-7_preview.jpg',
+      '> 100MP galaxy': 'http://test.adrapid.com/uploads/client_uploads/demo/img/7c7c52_carina_nebula_preview.jpg',
+      'Overlays': 'http://test.adrapid.com/uploads/client_uploads/demo/img/681b75_Lightroom-Crop-Grid-Overlay_preview.jpg',
+    };
       
-    // initialize cropzone
+    // Initialize the crop tool
+    // This perticular example is using imgAreaSelect.
+    // Documentation available at http://odyniec.net/projects/imgareaselect/
+    ////////////////////////////////////////////////////
+    
     var cropTool = $('#cropzone').imgAreaSelect({ 
       fadeSpeed: 450, 
       handles: true,
@@ -115,7 +129,9 @@ block scripts
         set_selection(selection, img);
       },
 
-      // NOTE: dont do this calculation every time, only need to do it on select end.
+      // NOTE: don't do this calculation every time selection
+      // is changed, only need to do it on select end or when
+      // the user clicks the crop button.
       onSelectChange: function (img, selection) {
         set_selection(selection, img);
       },
@@ -128,7 +144,7 @@ block scripts
 
     // cropzone helper functions
     function set_selection(selection, img) {
-      width = $('#cropzone').width();
+      width = $('#cropzone').width(); // re-calculate width of thumbnail - user may have resized the window
 
       // neccessarry to set these values
       $('input[name=x]').val(getPercentage(selection.x1));
@@ -164,7 +180,8 @@ block scripts
       console.log($('#crop_form').serializeObject());
 
       helpers.uploadMedia(data).then(function(result) {
-        $('#preview').attr('src', result.image.preview);
+        $('#preview').attr('src', result.image.preview); // update preview with cropped preview thumbnail
+        $('#show').attr('href', result.image.preview.replace('_preview', '')); // update link to full-size result
         $('#spinner').fadeOut();
       });
     }
@@ -173,15 +190,8 @@ block scripts
       perform_crop();      
     });
 
-
-    // init a image select function
-    var images = {
-      'Flower': 'http://test.adrapid.com/uploads/client_uploads/demo/img/180bf8_Purple-Flower-7_preview.jpg',
-      '> 100MP galaxy': 'http://test.adrapid.com/uploads/client_uploads/demo/img/7c7c52_carina_nebula_preview.jpg',
-      'Overlays': 'http://test.adrapid.com/uploads/client_uploads/demo/img/681b75_Lightroom-Crop-Grid-Overlay_preview.jpg',
-    };
-
-    var output = [];
+    // create an image select function
+    ////////////////////////////////////////////////////
 
     $.each(images, function(val, key) {
       output.push('<option value="' + key + '">' + val + '</option>');
@@ -193,6 +203,7 @@ block scripts
       var val = $(this).val();
       $('#cropzone').attr('src', val);
       $('input[name=image]').val(val);
+      $('#preview').attr('src', pixel);
       cropTool.update(); // re-draw cropTool selection, preventing issues if the ratio of the image has changed
     });
 
@@ -200,6 +211,8 @@ block scripts
     //- $('select[name=switch]').trigger('change');
 
     // attach a file upload helper
+    ////////////////////////////////////////////////////
+    
     helpers.uploadHelper({
       element: '#upload',
       begin: function() {
@@ -209,11 +222,17 @@ block scripts
         $('#spinner').fadeOut();
         $('#cropzone').attr('src', data.preview);
         $('input[name=image]').val(data.preview);
+        $('#preview').attr('src', pixel); // remove crop preview image
+        cropTool.update(); // re-calculate cropTool area since aspect ratio may have changed since last image
       },
     });
 
-    function setCropInitial() {
-      // TODO: preserve selected area
+    // handle browser window resize
+    ////////////////////////////////////////////////////
+
+    function responsiveSelection() {
+      //- TODO: preserve selected area
+      //- var currentWidth = width;
       //- var current = cropTool.getSelection();
       //- console.log(current);
       
@@ -223,7 +242,7 @@ block scripts
     }
 
     $(window).resize(function() {
-      setCropInitial();
+      responsiveSelection();
     });
 
   });
