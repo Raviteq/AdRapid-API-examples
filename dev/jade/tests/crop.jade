@@ -99,10 +99,12 @@ block results
   .flex
     .box
       img#cropzone(src="#{image}")
-      button#crop-button Crop!
     .box
       a#show(href='#', target='_blank')
         img#preview
+  
+  
+  button#crop-button Crop!
 
 block form
 
@@ -235,7 +237,7 @@ block scripts
       cropTool.setOptions({
         aspectRatio: $(this).val()
       })
-      .update();
+      cropTool.update();
     });
 
     // handle browser window resize
@@ -249,7 +251,8 @@ block scripts
       
       width = $('#cropzone').width();
       height = $('#cropzone').height();
-      cropTool.setSelection(width/4, height/4, width-(width/4), height-(height/4), true).update();
+      cropTool.setSelection(width/4, height/4, width-(width/4), height-(height/4), true);
+      cropTool.update();
     }
 
     $(window).resize(function() {
