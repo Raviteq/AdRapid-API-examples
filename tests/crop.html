@@ -41,10 +41,6 @@
           <form id="crop_form">
             <p>These values will be posted to the crop method. In a real-world scenario, the form field will be hidden for the end user. We keep track of the width of the thumbnail to be able to send crop values as percentages.</p>
             <div>
-              <label for="image">Image</label>
-              <input name="image" value="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img//1c1e3a_Purple-Flower-7.jpg" placeholder="image">
-            </div>
-            <div>
               <label for="x">X</label>
               <input name="x" placeholder="x">
             </div>
@@ -60,44 +56,9 @@
               <label for="height">Height</label>
               <input name="height" placeholder="height">
             </div>
-          </form>
-          <form id="extra" class="full">
-            <p>These values are for illustrative purposes only</p>
             <div>
-              <label for="thumbnail_width">Thumbnail width</label>
-              <input name="thumbnail_width" placeholder="thumbnail_width">
-            </div>
-            <div>
-              <label for="x1_">X1</label>
-              <input name="x1_" placeholder="x1">
-            </div>
-            <div>
-              <label for="y1_">Y1</label>
-              <input name="y1_" placeholder="y1">
-            </div>
-            <div>
-              <label for="x2_">X2</label>
-              <input name="x2_" placeholder="x2">
-            </div>
-            <div>
-              <label for="y2_">Y2</label>
-              <input name="y2_" placeholder="y2">
-            </div>
-            <div>
-              <label for="width_">Width (px)</label>
-              <input name="width_" placeholder="width">
-            </div>
-            <div>
-              <label for="height_">Height (px)</label>
-              <input name="height_" placeholder="height">
-            </div>
-            <div>
-              <label for="x2_relative">X2 (relative)</label>
-              <input name="x2_relative" placeholder="x2_relative">
-            </div>
-            <div>
-              <label for="y2_relative">Y2 (relative)</label>
-              <input name="y2_relative" placeholder="y2_relative">
+              <label for="image">Image</label>
+              <input name="image" value="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img//1c1e3a_Purple-Flower-7.jpg" placeholder="image">
             </div>
           </form>
         </div>
@@ -163,28 +124,17 @@
         width = $('#cropzone').width(); 
         height = $('#cropzone').height();
       
-        // neccessarry to set these values
+        // calculate new values
         $('input[name=x]').val(getPercentage(selection.x1, width));
         $('input[name=y]').val(getPercentage(selection.y1, height));
         $('input[name=width]').val(getPercentage(selection.width, width));
         $('input[name=height]').val(getPercentage(selection.height, height));
         $('input[name=thumbnail_width]').val(width);
-      
-        // for demo purposes only
-        $('input[name=x1_]').val(selection.x1);
-        $('input[name=x2_]').val(selection.x2);
-        $('input[name=y1_]').val(selection.y1);
-        $('input[name=y2_]').val(selection.y2);
-        $('input[name=width_]').val(selection.width);
-        $('input[name=height_]').val(selection.height);
-        $('input[name=x2_relative]').val(getPercentage(selection.x2, width));
-        $('input[name=y2_relative]').val(getPercentage(selection.y2, height));
       }
       
       function getPercentage(part, full) {
         if(!full) full = width;
         return parseFloat((part / full) * 100).toFixed(4) + '%';
-        //- return Math.round((part / full) * 100) + '%';
       }
       
       function perform_crop() {
@@ -238,6 +188,7 @@
         },
       });
       
+      
       // handle aspect ratio change
       ////////////////////////////////////////////////////
       
@@ -248,15 +199,11 @@
         cropTool.update();
       });
       
+      
       // handle browser window resize
       ////////////////////////////////////////////////////
       
       function responsiveSelection() {
-        //- TODO: preserve selected area
-        //- var currentWidth = width;
-        //- var current = cropTool.getSelection();
-        //- console.log(current);
-        
         width = $('#cropzone').width();
         height = $('#cropzone').height();
         cropTool.setSelection(width/4, height/4, width-(width/4), height-(height/4), true);
