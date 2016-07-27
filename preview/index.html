@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="../assets/app.css">
+    <link rel="stylesheet" type="text/css" href="../assets/lib/jquery.minicolors.css">
     <title>Html5 live preview</title>
   </head>
   <body>
@@ -12,7 +13,11 @@
       <div id="templates">
         <div id="description">
           <h3>HTML5 live preview</h3>
-          <p>This example illustrated how dynamic previews can be used.</p>
+          <p>This example illustrated how dynamic previews for html5 banners can be acheived.</p>
+          <p>This consists of two steps. First we need to get a preview of the banner for a specific template and embed the preview into the active page. </p>
+          <p>Secondly, we generate a form from the rules of the given template. We then bind form change events to update the preview when the form fields (texts, images, colors) are changed. This example is also using upload helpers and color pickers. </p>
+          <p>The <code>getForm</code> helper function handles getting the rules for a <code>templateId</code>, as well as generating a form using the template rules. The <code>getLivePreview</code> helper function handles binding of form events, as well of getting the preview. Check the source code of the <a href="https://github.com/Raviteq/AdRapid-API-examples/blob/master/assets/helpers.js" target="_blank"><code>helpers.js</code></a> library for further details on how this is achieved.</p>
+          <button id="load">Load live preview</button>
         </div>
       </div>
       <div id="form">
@@ -26,10 +31,10 @@
     <div id="spinner" class="loader">
       <div class="throbber throbber_large"></div>
     </div>
-    <!-- scripts-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
     <script src="../assets/adrapid.js"></script>
     <script src="../assets/helpers.js"></script>
-    <script src="app.js"></script>
+    <script type="text/javascript" src="../assets/lib/jquery.minicolors.min.js"></script>
+    <script type="text/javascript" src="app.js"></script>
   </body>
 </html>
