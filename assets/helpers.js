@@ -148,7 +148,7 @@ var helpers = function(options) {
   // live banner preview functions
   // ---------------------------------------------------
 
-  this.loadEdge = function(callback) {
+  this.loadPreviewDependencies = function(callback) {
     var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js';
     
     if(typeof AdobeEdge == 'undefined') {
@@ -256,6 +256,22 @@ var helpers = function(options) {
     return adrapid.api_get('medias', false, data);
   }
 
+  this.getLivePreview = function(templateId) {
+    this.loadPreviewDependencies(function() {         // make sure Adobe Edge runtime is loaded first
+      adrapid.getPreviewHtml5(templateId)             // get the animation content
+        .then(helpers.appendEdgeAnimation)               // append the banner to the page
+        .then(helpers.previewHelper)                     // bind form events
+        .then(helpers.addUploadHelpers);                 // add file uploads to form
+    });
+  }
+
+  this.getForm = function(templateId) {
+    return adrapid.rules(templateId).then(function(rules) {   // get the rules for the template
+      helpers.buildForm(rules, false, {                          // load the form for the template
+        formats: false,                                       // dont show formats dropdown
+      });
+    });
+  }
 
   // other test functions, may be removed
   // --------------------------------------------------------
