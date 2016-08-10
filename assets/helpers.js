@@ -161,7 +161,7 @@ var helpers = function(options) {
   }
 
   // add an edge animation to the page
-  this.appendEdgeAnimation = function(data, callback, target) {
+  this.appendAnimation = function(data, callback, target) {
     // create #Stage element if it does not exist
     var parts = data.script.split(', ');
     var edgeID = parts[1].substring(1, parts[1].length - 1);
@@ -174,9 +174,32 @@ var helpers = function(options) {
     $('head').append(data.script);
 
     if(callback) callback();
+    return data;
   }
 
   this.previewHelper = function(options) {
+    
+    // TODO: should utilize an initialization function,
+    // to avoid doing look-ups every time we update an
+    // text field
+    var fields = {}; // empty field obj
+
+    // we temporarily need to get rules, 
+    // to handle corner cases..
+    // ...
+    console.log('Got them options');
+    console.log(options);
+
+    // get & prepare field rules
+    adrapid.rules(options.templateId).then(function(rules) {
+      $.each(rules.fields, function(key, field) {
+        if(field.type == 'image' && field.replace) {
+          console.log('Got an image! ' + field.name);
+          fields[field.name] = field.replace.substring(0, field.replace.length - 4);
+        }
+      });
+    });
+
 
     // extend options
     var settings = $.extend( {
@@ -189,8 +212,12 @@ var helpers = function(options) {
     $('input[prop=text]').on('input', function() {
       var target = '#Stage__' + $(this).attr('name') + ' p';
 
+      // if target selector does not exist, try fallback
+      if (!$(target).length ) target = '#Stage_' + $(this).attr('name') + ' p';
       if($(target + ' font').length) { target += ' font';}
       if($(target + ' span').length) { target += ' span';}
+     
+      console.log(' > target : ' + target);
 
       $(target).html($(this).val());
     });
@@ -199,17 +226,29 @@ var helpers = function(options) {
     $('input[prop=image]').on('input', function() {
       var target = '#Stage_' + $(this).attr('name');
       var val = $(this).val();
+
+      // find fallback
+      if(fields[$(this).attr('name')]) {
+        console.log('Got replacement!');
+        console.log(fields[$(this).attr('name')]);
+        target = '#Stage_' + fields[$(this).attr('name')];
+      }
+
+      if(!$(target).length) target = '#Stage__02'; // temp
+
       $(target).css('background-image', 'url("' + val + '")');
     });
 
-    // color fields change
-    if(typeof minicolors !== 'undefined') {
+
+
+    // utilize minicolor library if used on the page
+    if (typeof $.minicolors !== 'undefined') {
       $('input[prop=color]').minicolors({
         control: 'wheel',
         format: 'rgb',
         opacity: true,
         change: function(value, opacity) {
-          if(!value) return;    
+          if(!value) return;
           changeColor($(this).attr('name'), $(this).val());
         }
       });
@@ -218,7 +257,8 @@ var helpers = function(options) {
         changeColor($(this).attr('name'), $(this).val());
       });
     }
-      
+
+
     // trigger state change on all text fields to get the correct content in the ad 
     setTimeout(function() { $('input[prop=text]').trigger('input'); }, 600);
     setTimeout(function() { $('input[prop=text]').trigger('input'); }, 1100);
@@ -227,10 +267,18 @@ var helpers = function(options) {
   }
 
   function changeColor(target, color) {
+    console.log('Change -> ' + target);
     if(target == 'color_text_field1') {
       $('#Stage div, #Stage p').css('color', color);
-    } else if(target == 'color_background') {
+    } else if(target.indexOf('background') > -1) {
       $('#Stage').css('background-color', color);
+
+      // remove previously set background image
+      $('input[name=img_1]').val('');
+      $('#Stage__02').css('background-image', '');
+    } else if(target.indexOf('button') > -1) {
+      // TODO: need global value
+      $('#Stage_Text3 p span').css('background-color', color); 
     } else {
       $('#Stage__' + target).css('background-color', color);
     }
@@ -245,11 +293,19 @@ var helpers = function(options) {
       // create image upload helper for the element
       uploadHelper({
         element: '#' + nn + '-temp',
+        begin: function() {
+          $('#spinner').fadeIn();
+        },
         complete: function(data) {
           elem.val(data.thumbnail).trigger('input');
+          $('#spinner').fadeOut();
         },
       });
     });
+  }
+
+  this.addColorPickers = function() {
+    console.log('Adding color pickers...');
   }
 
   this.uploadMedia = function(data, callback) {
@@ -259,7 +315,13 @@ var helpers = function(options) {
   this.getLivePreview = function(templateId) {
     this.loadPreviewDependencies(function() {         // make sure Adobe Edge runtime is loaded first
       adrapid.getPreviewHtml5(templateId)             // get the animation content
-        .then(helpers.appendEdgeAnimation)               // append the banner to the page
+        .then(function(data) {
+          data.templateId = templateId; // needs this later in the chain 
+          console.log('Got data at this point:');
+          console.log(data);
+          return data; // to next step
+        })
+        .then(helpers.appendAnimation)               // append the banner to the page
         .then(helpers.previewHelper)                     // bind form events
         .then(helpers.addUploadHelpers);                 // add file uploads to form
     });
