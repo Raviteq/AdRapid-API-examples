@@ -6,68 +6,20 @@
 	color altTextColor
 	
 form input, #form input
-	padding .4em
-	background white
-	border 1px solid #ccc
-	padding .8em
-	color #555
 
-#form input,
-#form select
+input,
+select
 	width 100%
+	color #555
+	background white
+	border 1px solid borderColor
+	padding .6em .4em
 
 #label, h3
 	color #333
 	
 #form .images
 	display flex
-		
-#crop_form, #extra
-	
-	div 
-		float left
-		width 120px
 
-	input
-		width 100px
-		padding 10px 10px
-		margin 0 0 10px 0
-
-	label
-		width 120px
-		border 1px solid rgba(0,0,0,0)
-		margin-right -100%
-		display inline
-		position relative
-		bottom -100%
-		white-space nowrap
-		max-width 150px
-		overflow hidden
-		text-overflow ellipsis
-		float left
-
-	
-/*
- * buttons
- */
-button, .button
-	border borderColor
-	background #323232
-	color white
-	display inline-block
-	position relative
-	overflow hidden
-	font-size 112%
-	line-height normal
-	vertical-align baseline
-	text-align center
-	cursor pointer
-	padding 0.7em .8em
-	text-decoration none
-	text-transform lowercase
-	outline 0
-	transition all 240ms cubic-bezier(0.250, 0.460, 0.450, 0.940)
-	margin 20px 0
-
-	&:hover
-		background black 
+label.inline-label
+	border 1px solid blue !important

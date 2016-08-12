@@ -1,4 +1,9 @@
 // mixins
+
+gradient(startColor, endColor)
+  background-color startColor
+  background-image linear-gradient(startColor, endColor)
+  
 valign()
   display flex
   align-items center
@@ -10,3 +15,6 @@ background-linear-gradient(startColor, endColor)
 
 bordered()
  border 1px solid borderColor
+
+inline-border()
+  box-shadow 1px 1px 0px borderColor

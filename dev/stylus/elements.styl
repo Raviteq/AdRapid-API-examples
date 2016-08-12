@@ -137,3 +137,91 @@
 	background rgba(10, 10, 10, 0.2)
 	valign()
 	border 1px solid lighten(#111, 10%)
+
+
+
+/*
+ * table styling
+ */
+
+table 
+	width 100%
+	// border 1px solid borderColor
+	// padding .6em
+
+
+#page-wrap
+	margin: 50px;
+
+p
+	margin: 20px 0; 
+
+table
+	width: 100%; 
+	border-collapse: collapse; 
+
+
+
+/* Zebra striping */
+tr:nth-of-type(odd) 
+	background #eee
+
+th
+	background #333
+	color white
+	font-weight bold
+
+td, th
+	padding 6px
+	border 1px solid #ccc
+	text-align left
+
+table input
+	width 88%
+	
+
+
+/*
+ * boxes / columns layout 
+ */
+
+
+#boxes
+	width 100% !important
+	display flex
+	flex-wrap wrap
+	align-items strech
+	padding 0
+
+.box
+	flex-basis 31% !important
+	flex-grow 1
+ 	flex-shrink 1
+	// border: 1px solid blue !important;
+	// background blue !important
+
+	// transition background 400ms ease-out
+	// &:hover
+	// 	background mix(gold, black, 80%)
+
+.ba 
+	padding .6em
+	// border: 1px solid lime
+	// align()
+
+.smaller-boxes .box
+	flex-basis 25% !important
+
+.even-smaller-boxes .box
+	flex-basis 12% !important
+
+
+.box
+	// padding: .6em
+
+	input, label, select
+		// width 100% !important
+		// clear: both !important;
+		// display block
+		// margin 0
+		// padding 0
