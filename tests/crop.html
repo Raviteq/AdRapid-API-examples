@@ -12,61 +12,90 @@
     <div id="app" class="content">
       <div id="templates">
         <div id="description">
-          <h3>Image crop example</h3>
-          <p>Sample implementation of the image crop functionality. Documentation is available <a href="http://raviteq.github.io/adrapid-api/#crop">http://raviteq.github.io/adrapid-api/#crop</a>. This perticular example is using the <a href="http://odyniec.net/projects/imgareaselect/usage.html">imgAreaSelect</a> library for the crop tool frontend.</p>
-          <div class="bordered">
-            <div>
+          <h2>Image crop example</h2>
+          <p>Sample implementation of the image crop functionality. Documentation is available here: <a href="http://raviteq.github.io/adrapid-api/#crop">http://raviteq.github.io/adrapid-api/#crop</a>. This perticular example is using the <a href="http://odyniec.net/projects/imgareaselect/usage.html">imgAreaSelect</a> library for the crop tool frontend.</p><br>
+          <hr><br>
+          <h3>Select an image</h3>
+          <div class="boxes">
+            <div class="box crop_upload">
               <label>Upload an image</label>
               <div id="upload"></div>
             </div>
-            <div>
+          </div>
+          <div class="boxes">
+            <div class="box"> 
               <label>...or select an image</label>
               <select name="switch">
                 <option value="http://test.adrapid.com/uploads/client_uploads/demo/img/180bf8_Purple-Flower-7_preview.jpg">Flower</option>
-                <option value="http://test.adrapid.com/uploads/client_uploads/demo/img/7c7c52_carina_nebula_preview.jpg">> 100MP galaxy</option>
+                <option value="http://test.adrapid.com/uploads/client_uploads/demo/img/7c7c52_carina_nebula_preview.jpg">Galaxy</option>
                 <option value="http://test.adrapid.com/uploads/client_uploads/demo/img/681b75_Lightroom-Crop-Grid-Overlay_preview.jpg">Overlays</option>
               </select>
             </div>
-            <div>
+          </div>
+          <div class="boxes">
+            <div class="box">
               <label>set aspect ratio</label>
               <select name="ratio">
                 <option value="">Any</option>
                 <option value="1:1">1:1</option>
-                <option value="1:3">1:3</option>
+                <option value="3:2">3:2</option>
                 <option value="3:1">3:1</option>
                 <option value="2:1">2:1</option>
+                <option value="16:9">16:9</option>
+                <option value="2:3">2:3</option>
+                <option value="1:3">1:3</option>
+                <option value="1:2">1:2</option>
+                <option value="9:16">9:16</option>
               </select>
             </div>
           </div>
+          <hr><br>
           <form id="crop_form">
-            <p>These values will be posted to the crop method. In a real-world scenario, the form field will be hidden for the end user. We keep track of the width of the thumbnail to be able to send crop values as percentages.</p>
-            <div>
-              <label for="x">X</label>
-              <input name="x" placeholder="x">
+            <h3>Crop values</h3>
+            <p>These values will be posted to the crop method. In a real-world scenario, the form field will be hidden for the end user. We keep track of the width of the thumbnail to be able to send crop values as percentages. </p>
+            <div class="boxes smaller-boxes">
+              <div class="box">
+                <div class="ba">
+                  <label for="x">X</label>
+                  <input name="x" placeholder="x">
+                </div>
+              </div>
+              <div class="box">
+                <div class="ba">
+                  <label for="y">Y</label>
+                  <input name="y" placeholder="y">
+                </div>
+              </div>
+              <div class="box">
+                <div class="ba">
+                  <label for="width">Width</label>
+                  <input name="width" placeholder="width">
+                </div>
+              </div>
+              <div class="box">
+                <div class="ba">
+                  <label for="height">Height</label>
+                  <input name="height" placeholder="height">
+                </div>
+              </div>
             </div>
-            <div>
-              <label for="y">Y</label>
-              <input name="y" placeholder="y">
-            </div>
-            <div>
-              <label for="width">Width</label>
-              <input name="width" placeholder="width">
-            </div>
-            <div>
-              <label for="height">Height</label>
-              <input name="height" placeholder="height">
-            </div>
-            <div>
-              <label for="image">Image</label>
-              <input name="image" value="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img//1c1e3a_Purple-Flower-7.jpg" placeholder="image">
+            <div class="boxes">
+              <div class="box">
+                <div class="ba">
+                  <label for="image">Image</label>
+                  <input name="image" value="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img/1c1e3a_Purple-Flower-7.jpg" placeholder="image" class="full">
+                </div>
+              </div>
             </div>
           </form>
         </div>
       </div>
       <div id="results">
         <div class="flex">
-          <div class="box"><img id="cropzone" src="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img//1c1e3a_Purple-Flower-7.jpg"></div>
-          <div class="box"><a id="show" href="#" target="_blank"><img id="preview"></a></div>
+          <div class="box"><a href="#"><img id="cropzone" src="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img/1c1e3a_Purple-Flower-7.jpg">
+              <h4>Image to be cropped</h4></a></div>
+          <div class="box"><a id="show" href="#" target="_blank"><img id="preview" src="http://test.adrapid.com/img/assets/pixel.png">
+              <h4>Result</h4></a></div>
         </div>
         <button id="crop-button">Crop!</button>
       </div>
@@ -83,48 +112,98 @@
       // config
       ////////////////////////////////////////////////////
       
-      var adrapid = new AdRapid('6271f323ff24875b74569ebc76eafa7c8ce0aa85'); // initialize AdRapid
+      var api_key = '6271f323ff24875b74569ebc76eafa7c8ce0aa85'; // apidemo
+      var adrapid = new AdRapid(api_key); // initialize AdRapid
       var width = $('#cropzone').width();
       var height = $('#cropzone').height();
       var pixel = 'http://test.adrapid.com/img/assets/pixel.png';
-        
+      var cropTool;
+      
       // Initialize the crop tool
       // This perticular example is using imgAreaSelect.
       // Documentation available at http://odyniec.net/projects/imgareaselect/
       ////////////////////////////////////////////////////
       
-      var cropTool = $('#cropzone').imgAreaSelect({ 
-        fadeSpeed: 450, 
-        handles: true,
-        instance: true,
-        x1: width/4, y1: height/4, x2: width-(width/4), y2: height-(height/4), // set initial selection
+      // wait for images first
+      $('body').imagesLoaded()
+        .done( function( instance ) {
+          console.log('all images successfully loaded');
+          setup_croptool(); // set up the crop tool when all images have finished loading
+        })
+        .fail( function() {
+          console.log('all images loaded, at least one is broken');
+          setup_croptool(); // some image have failed, try setting up the crop tool anyways
+        })
+        // debug images loading
+        .always( function( instance ) {
+          console.log('all images loaded');
+        })
+        .progress( function( instance, image ) {
+          var result = image.isLoaded ? 'loaded' : 'broken';
+          console.log( 'image is ' + result + ' for ' + image.img.src );
+          console.log(image);
+        });
       
-        onInit: function (img, selection) {
-          console.log('Set initial selection...');
-          set_selection(selection, img);
-        },
       
-        // NOTE: don't do this calculation every time selection
-        // is changed, only need to do it on select end or when
-        // the user clicks the crop button.
-        onSelectChange: function (img, selection) {
-          set_selection(selection, img);
-        },
+      // wrapper for the crop tool
+      function setup_croptool() {
+        console.log('Setting up crop tool..');
       
-        onSelectEnd: function(img, selection) {
-          set_selection(selection, img);
-        }
+        // set up the crop UI using imgAreaSelect
+        cropTool = $('#cropzone').imgAreaSelect({ 
+          fadeSpeed: 450, 
+          handles: true,
+          instance: true,
+          x1: width/4, y1: height/4, x2: width-(width/4), y2: height-(height/4), // set initial selection
       
-      });
+          // set an initial selection when the crop tool is activated
+          onInit: function (img, selection) {
+            console.log('Set initial selection...');
+            set_selection(selection, img);
+          },
+      
+          // NOTE: don't do this calculation every time selection
+          // is changed, only need to do it on select end or when
+          // the user clicks the crop button.
+          onSelectChange: function (img, selection) {
+            set_selection(selection, img);
+          },
+      
+          // set the final selection when user has stopped dragging
+          onSelectEnd: function(img, selection) {
+            set_selection(selection, img);
+          }
+      
+        });
+      
+      
+        // create an image select function
+        ////////////////////////////////////////////////////
+      
+        $('select[name=switch]').change(function(event) {
+          var val = $(this).val();
+          $('#cropzone').attr('src', val);
+          $('input[name=image]').val(val);
+          $('#preview').attr('src', pixel);
+          cropTool.update(); // re-draw cropTool selection, preventing issues if the ratio of the image has changed
+        });
+      
+        // trigger select on the first value
+        $('select[name=switch]').trigger('change');
+      
+      }
+      
       
       // cropzone helper functions
+      ////////////////////////////////////////////////////
+      
       function set_selection(selection, img) {
         
         // re-calculate dimensions of thumbnail - user may have resized the window
         width = $('#cropzone').width(); 
         height = $('#cropzone').height();
       
-        // calculate new values
+        // calculate new values, save in form
         $('input[name=x]').val(getPercentage(selection.x1, width));
         $('input[name=y]').val(getPercentage(selection.y1, height));
         $('input[name=width]').val(getPercentage(selection.width, width));
@@ -137,6 +216,7 @@
         return parseFloat((part / full) * 100).toFixed(4) + '%';
       }
       
+      // the main crop handling function
       function perform_crop() {
         var data = $('#crop_form').serializeArray();
         $('#spinner').fadeIn();
@@ -146,30 +226,21 @@
         console.log('Sending crop request with data:');
         console.log($('#crop_form').serializeObject());
       
+        // send request to the AdRapid medias API, providing the 
+        // selected image and crop parameters
         helpers.uploadMedia(data).then(function(result) {
+          console.log('Got result from crop:');
+          console.log(result);
+      
+          // do something with result of the request
           $('#preview').attr('src', result.image.preview); // update preview with cropped preview thumbnail
           $('#show').attr('href', result.image.preview.replace('_preview', '')); // update link to full-size result
           $('#spinner').fadeOut();
         });
       }
       
-      $('#crop-button').click(function(e) {
-        perform_crop();      
-      });
+      $('#crop-button').click(perform_crop);
       
-      // create an image select function
-      ////////////////////////////////////////////////////
-      
-      $('select[name=switch]').change(function(event) {
-        var val = $(this).val();
-        $('#cropzone').attr('src', val);
-        $('input[name=image]').val(val);
-        $('#preview').attr('src', pixel);
-        cropTool.update(); // re-draw cropTool selection, preventing issues if the ratio of the image has changed
-      });
-      
-      // trigger select on the first value
-      $('select[name=switch]').trigger('change');
       
       // attach a file upload helper
       ////////////////////////////////////////////////////
@@ -190,12 +261,16 @@
       
       
       // handle aspect ratio change
+      // TODO: set new selection instead of cancel selection
+      // need to calculate selection pixels for a given ratio.
       ////////////////////////////////////////////////////
       
       $('select[name=ratio]').change(function(event) {
         cropTool.setOptions({
           aspectRatio: $(this).val()
-        })
+        });
+        cropTool.cancelSelection();
+        //- cropTool.setSelection(50, 50, 100, 100, true); // set new selection
         cropTool.update();
       });
       
@@ -210,9 +285,7 @@
         cropTool.update();
       }
       
-      $(window).resize(function() {
-        responsiveSelection();
-      });
+      $(window).resize(responsiveSelection);
       
     </script>});
   </body>
