@@ -212,27 +212,43 @@ var helpers = function(options) {
     // fieldName:elementSelector pairs
     var fields = {};
 
-    // debug vars / counter
-    var numWatchers = 0;
-
     // initialize function - is only run once 
     (function init() {
       console.log('initialize html5 live preview...');
       
       // get & prepare field rules
-      adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
-        $.each(rules.fields, function(key, field) { // loop through list of fields to build rules
-          
-          // do we have a replace rule?
-          if(field.type == 'image' && field.replace) {
-            // debug ?
-            fields[field.name] = field.replace.substring(0, field.replace.length - 4);
-          } else {
-            // ... find selector for field
-          }
+      setTimeout(function() { // TODO: need to have rendered preview html before we can do this
+
+        adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
+          $.each(rules.fields, function(key, field) { // loop through list of fields to build rules
+            fields[field.name] = getSelector(field); // find selector for field
+          });
+
+          // debug form fields ruled
+          // console.log(' >> Our list of field selectors: ');
+          // console.log(fields);
+
+          // setup form event listeners
+
+          // text fields change
+          $('input[prop=text]').on('input', function() {
+            $(fields[$(this).attr('name')]).html($(this).val());
+          });
+
+          // image fields change
+          $('input[prop=image]').on('input', function() {
+            // TODO: support replace of both img src as well as background image
+            $(fields[$(this).attr('name')].target).css('background-image', 'url("' + $(this).val() + '")');
+          });
+
+          // handle formats dropdown change
+          $('select[name=formats]').change(function(event) {
+            switchFormat($(this).find(':selected').text());
+          });
 
         });
-      });
+
+      }, 700);
 
     }());
 
@@ -243,49 +259,8 @@ var helpers = function(options) {
       load: function() {}
     }, options);
 
-    // text fields change
-    $('input[prop=text]').on('input', function() {
-
-      // get target selector using helper
-      var target = getSelector($(this).attr('name'));
-      console.log('Selector: ' + target);
-
-      // replace the value
-      $(target).html($(this).val());
-    });
-
-    // image fields change
-    $('input[prop=image]').on('input', function() {
-      var target = '#Stage_' + $(this).attr('name');
-      var val = $(this).val();
-
-      // find fallback
-      if(fields[$(this).attr('name')]) {
-        // console.log('Got replacement!');
-        // console.log(fields[$(this).attr('name')]);
-        target = '#Stage_' + fields[$(this).attr('name')];
-        if(!$(target).length) target = '#Stage__' + fields[$(this).attr('name')]; // handle double underscore corner case
-      }
-
-      // check if we have a target
-      if(!$(target).length) {
-        // console.log('No target found!');
-        // console.log(target);
-        // target = '#Stage__02'; // temp fallback
-      }
-
-      $(target).css('background-image', 'url("' + val + '")');
-    });
-
     // add color pickers to form
     helpers.addColorPickers();
-
-    // handle formats dropdown change
-    $('select[name=formats]').change(function(event) {
-      // var newFormat = $(this).val();
-      var newFormat = $(this).find(':selected').text();
-      switchFormat(newFormat);
-    });
 
     // trigger state change on all text fields in order
     // to get the correct content in the ad.
@@ -297,27 +272,39 @@ var helpers = function(options) {
   }
 
   // find selector for name
-  function getSelector(name) {
-    console.log('Calling getSelector function for: ' + name);
+  function getSelector(field) {
+    var name = field.name;
+    // console.log('Calling getSelector function for: ' + name);
     
     // find selector for field name
     // TODO: update priority order
-    // TODO: support for images
-    
-    // possible patterns:
-    // #name
-    // #Stage_name p font span
-    // #Stage_name p span
-    // #Stage_name p font
-    // #Stage_name p
-    // #Stage_name
-    // #Stage__name p font span
-    // #Stage__name p span
-    // #Stage__name p font
-    // #Stage__name p
-    // #Stage__name
-    // (iframe) #name 
-    // [...]
+
+    // check for internal replacement for image
+    if(field.type == 'image') { // && field.replace [?]
+      var target = findImageElement(field); // using helper
+
+      console.log('Got this image!!');
+      console.log(target);
+
+      // check for other targets
+      // (redundant?)
+      if($('#' + field.name).length) target = '#' + field.name;
+
+      // - check for existence of element with name
+      // TODO: check if we should repl1ace background or img ? 
+
+      return {
+        // returns an object
+        // TODO: set config for this
+        name: name,
+        target: target,
+        type: 'replace', 
+        attr: 'background', // either 'background' or 'img'
+        // replace: replaceString,
+      };
+    }
+
+    // text fields / other:
 
     // #name
     if($('#' + name).length) return $('#' + name);
@@ -342,8 +329,55 @@ var helpers = function(options) {
     // (to replace iframe content ...)
     // $('#iframe_result').contents().find('#' + $(this).attr('name')).text($(this).val()); // replace in local iframe
 
+    // TODO: support for images
+    // TODO: support for colors
+    // TODO: support for spec
+
     // not found yet...
     return '#notFound';
+  }
+
+  function findTextElement(field) {
+    // ...
+  }
+
+  function findImageElement(field) {
+    var target; // temp
+    
+    if(field.replace) {
+      var replaceString = field.replace.substring(0, field.replace.length - 4);
+
+      if(replaceString.length) {
+        
+        // find selector by some patterns:
+        if($('#' + replaceString).length) return '#' + replaceString;
+        if($('#Stage__' + replaceString).length) return '#Stage__' + replaceString;
+        if($('#Stage_' + replaceString).length) return '#Stage_' + replaceString;                
+        
+      } else {
+        console.log('replaceString missmatch..');
+      }
+    } else {
+      console.log('No replace conf..'); // = no 'replace' property in rules - its all good
+    }
+
+    // additional checks
+    if($('#Stage__' + field.name).length) return '#Stage__' + field.name;
+    if($('#Stage_' + field.name).length) return '#Stage_' + field.name;                
+
+    // look for results in iframe 
+    var iframeD = $('#iframe_result').contents();
+    var specD = iframeD.find('#' + field.name)
+    
+    // rrr
+    if(specD) {
+      console.log(' >> We have iframe field !! - ' + field.name);
+      // .text($(this).val());
+    } else {
+      console.log(' >> Try find field in iframe, but failed - ' + field.name);
+    }
+
+    return ''; // no image found
   }
 
   // remove add depdendencies
