@@ -7,6 +7,9 @@ var helpers = function(options) {
   var func = function() {};
   this.inspectors = [];
   this.uploadHelper = uploadHelper;
+  this.template_key = '';
+
+  var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js';
 
   // setup options for using the AdRapid api_get method 
   // to send the file upload request using AJAX.
@@ -56,8 +59,7 @@ var helpers = function(options) {
 
   // watch order events
   this.watchOrder = function(options) {
-    adrapid.watch({
-      order_id: options.order_id,
+    var settings = $.extend( {
       init: function() {
         $('.loader').fadeIn();
       },
@@ -68,7 +70,15 @@ var helpers = function(options) {
       },
       complete: function(data) {
         $('.loader').fadeOut();
-      },
+      }
+    }, options);
+
+    adrapid.watch({
+      order_id: options.order_id,
+      init: settings.init,
+      update: settings.update,
+      complete: settings.complete,
+      // TODO: add 'downloadable' event
     });
   }
 
@@ -149,9 +159,8 @@ var helpers = function(options) {
   // ---------------------------------------------------
 
   this.loadPreviewDependencies = function(callback) {
-    var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js';
-    
     if(typeof AdobeEdge == 'undefined') {
+      console.log('Loading animation dependencies...');
       $.getScript(edgeSrc, function() {
         if(callback) callback();
       });
@@ -162,17 +171,33 @@ var helpers = function(options) {
 
   // add an edge animation to the page
   this.appendAnimation = function(data, callback, target) {
-    // create #Stage element if it does not exist
-    var parts = data.script.split(', ');
-    var edgeID = parts[1].substring(1, parts[1].length - 1);
+    
+    // try setting dimensions 
+    if(data.script.indexOf(', ') > -1) {
 
-    if(!$('.' + edgeID).length) {
-      $('#target').html('<div id="Stage" class="' + edgeID + '"></div>');
+      // create Stage element if it does not exist
+      var parts = data.script.split(', ');
+      var edgeID = parts[1].substring(1, parts[1].length - 1);
+
+      // create Stage element
+      if(!$('.' + edgeID).length) {
+        $('#target').html('<div id="Stage" class="' + edgeID + '"></div>');
+      }
+
+      // add the script
+      $('head').append(data.script);
+
+      // set dimensions
+      var wdims = $('script#ad-preview').attr('data-dimensions').split('x');
+      $('#target').width(wdims[0]).height(wdims[1]);
+      
+      console.log('Appended animation...');
+    } else {
+      // try to append the script
+      $('head').append(data.script);
     }
 
-    // add the script
-    $('head').append(data.script);
-
+    console.log('Appended ? ');
     if(callback) callback();
     return data;
   }
@@ -184,17 +209,11 @@ var helpers = function(options) {
     // text field
     var fields = {}; // empty field obj
 
-    // we temporarily need to get rules, 
-    // to handle corner cases..
-    // ...
-    console.log('Got them options');
-    console.log(options);
-
     // get & prepare field rules
     adrapid.rules(options.templateId).then(function(rules) {
       $.each(rules.fields, function(key, field) {
         if(field.type == 'image' && field.replace) {
-          console.log('Got an image! ' + field.name);
+          // console.log('Got an image! ' + field.name);
           fields[field.name] = field.replace.substring(0, field.replace.length - 4);
         }
       });
@@ -212,12 +231,23 @@ var helpers = function(options) {
     $('input[prop=text]').on('input', function() {
       var target = '#Stage__' + $(this).attr('name') + ' p';
 
+      // if further target(s) exists, use these as selector instead
+
+      // check other - actual ID
+      if($('#' + $(this).attr('name')).length)
+        target = $('#' + $(this).attr('name'));
+
+
       // if target selector does not exist, try fallback
       if (!$(target).length ) target = '#Stage_' + $(this).attr('name') + ' p';
       if($(target + ' font').length) { target += ' font';}
       if($(target + ' span').length) { target += ' span';}
-     
-      console.log(' > target : ' + target);
+
+      // temp
+      // target = '#' + $(this).attr('name');
+      $('#iframe_result').contents().find('#' + $(this).attr('name')).text($(this).val()); // replace in local iframe
+
+      console.log('REPL: ' + target + ' -> ' + $(this).val());
 
       $(target).html($(this).val());
     });
@@ -229,56 +259,173 @@ var helpers = function(options) {
 
       // find fallback
       if(fields[$(this).attr('name')]) {
-        console.log('Got replacement!');
-        console.log(fields[$(this).attr('name')]);
+        // console.log('Got replacement!');
+        // console.log(fields[$(this).attr('name')]);
         target = '#Stage_' + fields[$(this).attr('name')];
+        if(!$(target).length) target = '#Stage__' + fields[$(this).attr('name')]; // handle double underscore corner case
       }
 
-      if(!$(target).length) target = '#Stage__02'; // temp
+      // check if we have a target
+      if(!$(target).length) {
+        // console.log('No target found!');
+        // console.log(target);
+        // target = '#Stage__02'; // temp fallback
+      }
 
       $(target).css('background-image', 'url("' + val + '")');
     });
 
 
-
-    // utilize minicolor library if used on the page
-    if (typeof $.minicolors !== 'undefined') {
-      $('input[prop=color]').minicolors({
-        control: 'wheel',
-        format: 'rgb',
-        opacity: true,
-        change: function(value, opacity) {
-          if(!value) return;
-          changeColor($(this).attr('name'), $(this).val());
-        }
-      });
-    } else {
-      $('input[prop=color]').on('input', function() {
-        changeColor($(this).attr('name'), $(this).val());
-      });
-    }
+    helpers.addColorPickers();
 
 
-    // trigger state change on all text fields to get the correct content in the ad 
+    // handle formats dropdown change
+    $('select[name=formats]').change(function(event) {
+      // var newFormat = $(this).val();
+      var newFormat = $(this).find(':selected').text();
+      switchFormat(newFormat);
+    });
+
+    // trigger state change on all text fields in order
+    // to get the correct content in the ad.
+    // TODO: should use callback
     setTimeout(function() { $('input[prop=text]').trigger('input'); }, 600);
     setTimeout(function() { $('input[prop=text]').trigger('input'); }, 1100);
 
     settings.complete();
   }
 
+  // remove add depdendencies
+  function flushAd(callback) {
+
+    // remove scripts
+    $("script[src='*preview_edge.js']").remove();
+    $("script[src='http://test.adrapid.com/templates/banner/*']").remove();
+    $("script[src='*edge.js']").remove();
+    $("script[src='*http://test.adrapid.com/templates/banner/amedia-3_image/980x300/980x300-preview_edge.js']").remove(); // test specific
+    $.each($('head script'), function(i, s) { $(s).remove(); });
+    $.each($('head object'), function(i, s) { $(s).remove(); });
+    $('#ad-preview').remove();
+
+    // ...after this, we should possibly be able 
+    //    to force-reload the actual template..!
+  }
+
+  // chcnage format helper
+  function switchFormat(newFormat) {
+    console.log(' -> Setting new format: ' + newFormat);
+
+    flushAd(); // remove current libraries for currently running ad
+    
+    $('#target').html('Loading...');
+
+    // force-reload animation dependencies
+    setTimeout(function() {
+      $.getScript(edgeSrc, function() {
+        console.log('Force-reloaded animation libs!');
+      });
+    }, 100);
+
+    // get new live preview using helper
+    // TODO: only get new preview, do not trigger for mevetns..
+    setTimeout(function() {
+      console.log(' >> will get new preview');
+      console.log('template: ' + this.template_key);
+      console.log('format: ' + newFormat)
+      
+      // re-fetch preview using adrapid helper
+      // helpers.getLivePreview(this.template_key, newFormat);
+      reloadHtml5ForFormat(template_key, newFormat);
+    }, 400);
+
+    // trigger input re-render ....
+    setTimeout(function() { 
+      $('input').trigger('input');
+    }, 800);
+  
+    // setup test for banner - make sur it is loaded
+    setTimeout(function() {
+      html5BannerExists(function() {
+        console.log(' >> Error handling! try reload the banner...');
+        
+        $('#target').html('<h2>Fail</h2>').css('background', 'red');
+
+        setTimeout(function() {
+          reloadHtml5ForFormat(template_key, newFormat); // error callback
+        }, 1200);
+      });
+    }, 2222);
+
+  }
+
+  function setElementDims(format) {
+    setTimeout(function(){
+      var dims = format.split('x');
+      $('#target').width(dims[0]).height(dims[1]);
+      $('#target').css({
+        width: dims[0],
+        height: dims[1],
+      });
+
+      console.log('Updating container dimensions. Set format = ' + dims[0] + 'x' + dims[1] + ' (' + $('#target').width() + 'px is container)');
+    }, 222);
+  }
+
+  // reload html5 helper
+  function reloadHtml5ForFormat(template_key, format) {
+    adrapid.getPreviewHtml5(template_key, format) 
+      .then(function(data) {
+        console.log('xxx-- Loaded html5 preview...');
+
+        data.templateId = template_key;               // save template ID, is needed later
+        
+        if(format) setElementDims(format); // set dimensios of preview container
+        
+        setTimeout(function() { $('input').trigger('input'); }, 800); // setup input triggerning
+        return data;                                // return data to next step
+      })
+      .then(helpers.appendAnimation)              // add the animation to the area 
+    ;
+  }
+
+  // test existance of html5 banner in page
+  function html5BannerExists(failCallback) {
+    var findElem = $('#Stage_Text');
+    console.log(findElem);
+
+    if(findElem.length == 1) {
+      console.log(' HAVE html5 banner!');
+    } else {
+      console.log(' MISSING html5 banner!');
+
+      // if its missing, we can try reload
+      if(failCallback) failCallback();
+    }
+  }
+
+  // handle color change for live preview
   function changeColor(target, color) {
-    console.log('Change -> ' + target);
     if(target == 'color_text_field1') {
-      $('#Stage div, #Stage p').css('color', color);
+      $('#Stage div p').css('color', color);
     } else if(target.indexOf('background') > -1) {
       $('#Stage').css('background-color', color);
 
       // remove previously set background image
+      // TODO: remove name dependency
       $('input[name=img_1]').val('');
       $('#Stage__02').css('background-image', '');
+    
+    // button
     } else if(target.indexOf('button') > -1) {
       // TODO: need global value
       $('#Stage_Text3 p span').css('background-color', color); 
+    
+    // cornercase: shape
+    } else if(target.indexOf('_shape') > -1) {
+      // TODO: need global value
+      $('#Stage_Rectangle').css('background-color', color); 
+    
+    // default: background
     } else {
       $('#Stage__' + target).css('background-color', color);
     }
@@ -297,41 +444,63 @@ var helpers = function(options) {
           $('#spinner').fadeIn();
         },
         complete: function(data) {
-          elem.val(data.thumbnail).trigger('input');
+          elem.val(data.preview).trigger('input'); // 3 sizes available - thumb, preview & original
           $('#spinner').fadeOut();
         },
       });
     });
+
+    return true;
   }
 
   this.addColorPickers = function() {
     console.log('Adding color pickers...');
+
+    // utilize minicolor library if used on the page
+    if (typeof $.minicolors !== 'undefined') {
+      $('input[prop=color]').minicolors({
+        control: 'wheel',
+        format: 'rgb',
+        opacity: true,
+        change: function(value, opacity) {
+          if(!value) return;
+          changeColor($(this).attr('name'), $(this).val());
+        }
+      });
+    } else {
+      $('input[prop=color]').on('input', function() {
+        changeColor($(this).attr('name'), $(this).val());
+      });
+    }
   }
 
   this.uploadMedia = function(data, callback) {
     return adrapid.api_get('medias', false, data);
   }
 
-  this.getLivePreview = function(templateId) {
-    this.loadPreviewDependencies(function() {         // make sure Adobe Edge runtime is loaded first
-      adrapid.getPreviewHtml5(templateId)             // get the animation content
+  this.getLivePreview = function(templateId, format) {
+    // TODO: add support for options!
+
+    this.loadPreviewDependencies(function() {         // make sure animation dependencies is loaded before loading the banner
+      adrapid.getPreviewHtml5(templateId, format)             // get the banner animation content
         .then(function(data) {
-          data.templateId = templateId; // needs this later in the chain 
-          console.log('Got data at this point:');
-          console.log(data);
-          return data; // to next step
+          console.log('-- Loaded html5 preview... [for the first time]');
+          // console.log(data);
+
+          if(format) setElementDims(format);          // set dimensions of preview container
+          
+          data.templateId = templateId;               // save template ID, is needed later
+          return data;                                // return data to next step
         })
-        .then(helpers.appendAnimation)               // append the banner to the page
-        .then(helpers.previewHelper)                     // bind form events
-        .then(helpers.addUploadHelpers);                 // add file uploads to form
+        .then(helpers.appendAnimation)                // append the banner to the page
+        .then(helpers.previewHelper)                  // bind form events
+        .then(helpers.addUploadHelpers);              // add file uploads to form
     });
   }
 
   this.getForm = function(templateId) {
     return adrapid.rules(templateId).then(function(rules) {   // get the rules for the template
-      helpers.buildForm(rules, false, {                          // load the form for the template
-        formats: false,                                       // dont show formats dropdown
-      });
+      helpers.buildForm(rules, false);
     });
   }
 
