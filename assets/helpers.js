@@ -207,18 +207,34 @@ var helpers = function(options) {
     // TODO: should utilize an initialization function,
     // to avoid doing look-ups every time we update an
     // text field
-    var fields = {}; // empty field obj
+    
+    // empty field obj, will be populated with 
+    // fieldName:elementSelector pairs
+    var fields = {};
 
-    // get & prepare field rules
-    adrapid.rules(options.templateId).then(function(rules) {
-      $.each(rules.fields, function(key, field) {
-        if(field.type == 'image' && field.replace) {
-          // console.log('Got an image! ' + field.name);
-          fields[field.name] = field.replace.substring(0, field.replace.length - 4);
-        }
+    // debug vars / counter
+    var numWatchers = 0;
+
+    // initialize function - is only run once 
+    (function init() {
+      console.log('initialize html5 live preview...');
+      
+      // get & prepare field rules
+      adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
+        $.each(rules.fields, function(key, field) { // loop through list of fields to build rules
+          
+          // do we have a replace rule?
+          if(field.type == 'image' && field.replace) {
+            // debug ?
+            fields[field.name] = field.replace.substring(0, field.replace.length - 4);
+          } else {
+            // ... find selector for field
+          }
+
+        });
       });
-    });
 
+    }());
 
     // extend options
     var settings = $.extend( {
@@ -229,26 +245,12 @@ var helpers = function(options) {
 
     // text fields change
     $('input[prop=text]').on('input', function() {
-      var target = '#Stage__' + $(this).attr('name') + ' p';
 
-      // if further target(s) exists, use these as selector instead
+      // get target selector using helper
+      var target = getSelector($(this).attr('name'));
+      console.log('Selector: ' + target);
 
-      // check other - actual ID
-      if($('#' + $(this).attr('name')).length)
-        target = $('#' + $(this).attr('name'));
-
-
-      // if target selector does not exist, try fallback
-      if (!$(target).length ) target = '#Stage_' + $(this).attr('name') + ' p';
-      if($(target + ' font').length) { target += ' font';}
-      if($(target + ' span').length) { target += ' span';}
-
-      // temp
-      // target = '#' + $(this).attr('name');
-      $('#iframe_result').contents().find('#' + $(this).attr('name')).text($(this).val()); // replace in local iframe
-
-      console.log('REPL: ' + target + ' -> ' + $(this).val());
-
+      // replace the value
       $(target).html($(this).val());
     });
 
@@ -275,9 +277,8 @@ var helpers = function(options) {
       $(target).css('background-image', 'url("' + val + '")');
     });
 
-
+    // add color pickers to form
     helpers.addColorPickers();
-
 
     // handle formats dropdown change
     $('select[name=formats]').change(function(event) {
@@ -293,6 +294,56 @@ var helpers = function(options) {
     setTimeout(function() { $('input[prop=text]').trigger('input'); }, 1100);
 
     settings.complete();
+  }
+
+  // find selector for name
+  function getSelector(name) {
+    console.log('Calling getSelector function for: ' + name);
+    
+    // find selector for field name
+    // TODO: update priority order
+    // TODO: support for images
+    
+    // possible patterns:
+    // #name
+    // #Stage_name p font span
+    // #Stage_name p span
+    // #Stage_name p font
+    // #Stage_name p
+    // #Stage_name
+    // #Stage__name p font span
+    // #Stage__name p span
+    // #Stage__name p font
+    // #Stage__name p
+    // #Stage__name
+    // (iframe) #name 
+    // [...]
+
+    // #name
+    if($('#' + name).length) return $('#' + name);
+    
+    // double __
+    if($('#Stage__' + name + ' p font span').length) return '#Stage__' + name + ' p font span';
+    if($('#Stage__' + name + ' p span').length) return '#Stage__' + name + ' p span';
+    if($('#Stage__' + name + ' p font').length) return '#Stage__' + name + ' p font';
+    if($('#Stage__' + name + ' p').length) return '#Stage__' + name + ' p';
+    if($('#Stage__' + name).length) return '#Stage__' + name;
+
+    // single _
+    if($('#Stage_' + name + ' p font span').length) return '#Stage_' + name + ' p font span';
+    if($('#Stage_' + name + ' p span').length) return '#Stage_' + name + ' p span';
+    if($('#Stage_' + name + ' p font').length) return '#Stage_' + name + ' p font';
+    if($('#Stage_' + name + ' p').length) return '#Stage_' + name + ' p';
+    if($('#Stage_' + name).length) return '#Stage_' + name;
+
+    // look into the iframe as well...
+    if($('#iframe_result').contents().find('#' + name).length) return $('#iframe_result').contents().find('#' + name);
+
+    // (to replace iframe content ...)
+    // $('#iframe_result').contents().find('#' + $(this).attr('name')).text($(this).val()); // replace in local iframe
+
+    // not found yet...
+    return '#notFound';
   }
 
   // remove add depdendencies
