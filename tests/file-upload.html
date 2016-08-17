@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../assets/app.css">
+    <title>File uploads</title>
+  </head>
+  <body>
+    <!-- main content-->
+    <div id="app" class="content">
+      <div id="templates">
+        <div id="description">
+          <h1>File upload example</h1>
+          <p>Example implementation for handling file uploads through the AdRapid API. Select an image using the form below, the image will be uploaded to AdRapid and a thumbnail of the uploaded image will be shown in the results box.</p>
+          <p>The file upload form below has been generated using the <code>uploadHelper</code> function available in the <a href="https://github.com/Raviteq/AdRapid-API-examples/blob/master/assets/helpers.js" target="_blank">helpers.js</a> library. The uploadHelper function takes an input selector which is converted to an file upload form, and provides an callback function which is fired when an image has been sucessfully uploaded. </p>
+          <p>The result of the medias upload request is an JSON object, prodiving a set of thumbnail sizes - <i>thumb</i>, <i>preview</i> and <i>original</i>. </p>
+          <h3>Upload file</h3>
+          <div id="formSelector1"></div>
+        </div>
+      </div>
+      <div id="form">
+      </div>
+      <div id="results">
+        <div class="flex">
+          <div id="result1" class="box">
+            <h3>Upload an image, result will appear here</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="spinner" class="loader">
+      <div class="throbber throbber_large"></div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="../assets/adrapid.js"></script>
+    <script src="../assets/helpers.js"></script>
+    <script type="text/javascript">
+      // initialize AdRapid
+      var api_key = '6271f323ff24875b74569ebc76eafa7c8ce0aa85';
+      var adrapid = new AdRapid(api_key);
+      
+      // add upload helper actions
+      helpers.uploadHelper({
+        element: '#formSelector1', // element to be converted to file upload form
+        begin: function(d) {
+          $('.loader').fadeIn();
+          $('#result1').html('<h3>Uploading file...</h3>');
+        },
+        complete: function(data) {
+          $('.loader').fadeOut();
+          $('#result1').html('<img src="' + data.preview + '">');
+          console.log('Result form file upload request:');
+          console.log(data);
+        },
+      });
+      
+      $('#form').hide(); // hide form initially
+    </script>
+  </body>
+</html>
