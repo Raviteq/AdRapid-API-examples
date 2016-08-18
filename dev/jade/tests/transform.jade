@@ -1,0 +1,140 @@
+extends ../template.jade
+
+block title
+  title Image transformations example
+
+block description
+
+  - transformations = { 'Trim image': 'trim', 'Flip horizontally': 'flop', 'Flip vertically': 'flip'}
+  - pixel = 'http://test.adrapid.com/img/assets/pixel.png'
+  - defaultImage = 'http://test.adrapid.com/uploads/client_uploads/demo/img//288c28_5c43c9977ebe4d0c7630524553b0e7e0_preview.jpg'
+
+  h1 Image transformations
+  p This example illustrates how image transformations can be used. To apply transformations to an image, simply supply the <code>transform</code> property to the <code>medias</code> method. Transformations can be applied on both existing medias as well as new medias during the upload process. Multiple transformations can be applied at once. Documentation for the transform method is available at the <a href="http://raviteq.github.io/adrapid-api/#transform" target="_blank">AdRapid API documentation</a>
+
+  hr
+
+  h3 Perform image transformations
+  form#transform_form
+    input(name='url', type='hidden' value="#{defaultImage}")
+
+    .boxes
+
+      //- create checkbox for each transformation
+      .bordered.fullSize
+        each key, value in transformations
+          div.full.bordered
+            label.checkbox= value
+            input(type='checkbox', name='transform', value=key)
+        
+      .boxr(style = 'padding-left 2em; max-width: 60%;')
+        select(name='rotate')
+          option(value='') -- Rotate image -- 
+          option(value='rotate-90') Rotate by 90 degrees
+          option(value='rotate-180') Rotate by 180 degrees
+          option(value='rotate-270') Rotate by 270 degrees
+          option(value='') No rotation
+
+    button.button#transform Transform image
+    hr
+
+    h3 Upload new image
+    label(for='image') Image
+    #formSelector1
+
+
+block results
+  .flex
+    .box
+      #uploadPreview
+        a(href='#')
+          img(src="#{defaultImage}")
+          h4 Before transformations
+    .box
+      a(href='#')
+        #transformPreview
+          img(src="#{pixel}")
+          h4 After transformations
+
+block form_content
+
+block scripts
+  script(type="text/javascript").
+
+    // initialize AdRapid
+    var api_key = '6271f323ff24875b74569ebc76eafa7c8ce0aa85';
+    var adrapid = new AdRapid(api_key);
+    var previewElement = $('#uploadPreview');
+    var transformElement = $('#transformPreview img');
+
+    // setup form upload action
+    helpers.uploadHelper({
+      element: '#formSelector1',
+      begin: function(d) {
+        previewElement.html('<h3>Uploading file...</h3>');
+        $('#spinner').fadeIn();
+      },
+      complete: function(data) {
+        previewElement.html('<img src="' + data.preview + '">');
+        $('input[name=url]').val(data.original);
+        $('#spinner').fadeOut();
+      }
+    });
+
+    function getTransformString() {
+      var formContent = $('#transform_form').serializeObject();
+      var transformString = '';
+
+      // concat selected transformations into string is array
+      if(formContent.transform instanceof Array) {
+        $.each(formContent.transform, function(key, val) {
+          transformString += val + ',';
+        });
+        
+
+        transformString = transformString.substring(0, transformString.length - 1); // remove last ','
+      } else {
+        console.log(' >> single val ? ');
+        transformString = formContent.transform; // single value
+      }
+
+
+      // TODO: check last char in string .. 
+      // add optional rotate value to our transform string
+      var rotValue = $('select[name=rotate]').val();
+      if(rotValue) transformString += ',' + rotValue;
+
+      // make sure we do not have a comma first
+      // TODO: refactor this, is quite ugly..
+      if (transformString.substring(0, 1) == ',') transformString = transformString.substring(1);
+
+      return transformString;
+    }
+
+
+    // handle transform clicky
+    $('#transform').click(function(event) {
+      event.preventDefault();
+      $('#spinner').fadeIn();
+
+      // prepare transform data
+      var formData = {
+        image: $('input[name=url').val(),
+        transform: getTransformString() // contains string of transformations 
+      };
+
+      // debug
+      //- $('#debug').text(JSON.stringify(formData));
+      console.log('Will submit form data:');
+      console.log(formData);
+      
+      // send in this ajax
+      adrapid.api_get('medias', false, formData).then(function(result) {
+        // update our preview element with the result of transform
+        transformElement.attr('src', result.image.original);
+        $('#spinner').fadeOut();
+      });
+
+    });
+    
+    $('#form').hide(); // hide form
