@@ -9,8 +9,6 @@ var helpers = function(options) {
   this.uploadHelper = uploadHelper;
   this.template_key = '';
 
-  var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js';
-
   // setup options for using the AdRapid api_get method 
   // to send the file upload request using AJAX.
   var uploadOptions = {
@@ -18,6 +16,12 @@ var helpers = function(options) {
     processData : false, // Don't process the files
     contentType : false, // Set content type to false as jQuery will tell the server its a query string request
   };
+
+  // global vars f0r html5 live preview
+  var globalVar = 'herp'; //  temp global var
+  var currentFormat = '300x250'; // contains current format of html5 banner
+  var formFields; // contains form field rules
+  var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js'; // path to Edge
 
   // build a form from template rules
   this.buildForm = function(rules, template, settings) {
@@ -172,6 +176,12 @@ var helpers = function(options) {
   // add an edge animation to the page
   this.appendAnimation = function(data, callback, target) {
     
+    // if we have html content, load it 
+    if(data.content) {
+      console.log('Load banner html content...');
+      $('#target').html(data.content);
+    }
+
     // try setting dimensions 
     if(data.script.indexOf(', ') > -1) {
 
@@ -193,7 +203,7 @@ var helpers = function(options) {
       
       console.log('Appended animation...');
     } else {
-      // try to append the script
+      // try to append the script // ...
       $('head').append(data.script);
     }
 
@@ -202,55 +212,23 @@ var helpers = function(options) {
     return data;
   }
 
+  // setup editor for html5 live preview
+  // - depends html5 preview (loaded), as well as a an order form.
   this.previewHelper = function(options) {
     
+    // debug
+    // if(options) {
+    //   console.log('We have options!');
+    //   console.log(options);
+    // }
+
     // TODO: should utilize an initialization function,
     // to avoid doing look-ups every time we update an
     // text field
     
-    // empty field obj, will be populated with 
-    // fieldName:elementSelector pairs
+    // empty field obj, will be populated with fieldName:elementSelector pairs
+    // is also mapped to global formFields object
     var fields = {};
-
-    // initialize function - is only run once 
-    (function init() {
-      console.log('initialize html5 live preview...');
-      
-      // get & prepare field rules
-      setTimeout(function() { // TODO: need to have rendered preview html before we can do this
-
-        adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
-          $.each(rules.fields, function(key, field) { // loop through list of fields to build rules
-            fields[field.name] = getSelector(field); // find selector for field
-          });
-
-          // debug form fields ruled
-          // console.log(' >> Our list of field selectors: ');
-          // console.log(fields);
-
-          // setup form event listeners
-
-          // text fields change
-          $('input[prop=text]').on('input', function() {
-            $(fields[$(this).attr('name')]).html($(this).val());
-          });
-
-          // image fields change
-          $('input[prop=image]').on('input', function() {
-            // TODO: support replace of both img src as well as background image
-            $(fields[$(this).attr('name')].target).css('background-image', 'url("' + $(this).val() + '")');
-          });
-
-          // handle formats dropdown change
-          $('select[name=formats]').change(function(event) {
-            switchFormat($(this).find(':selected').text());
-          });
-
-        });
-
-      }, 700);
-
-    }());
 
     // extend options
     var settings = $.extend( {
@@ -259,40 +237,175 @@ var helpers = function(options) {
       load: function() {}
     }, options);
 
-    // add color pickers to form
-    helpers.addColorPickers();
+    // initialize function - is only run once 
+    (function init() {
+      console.log('initialize html5 live preview...');
+      console.log(' > type of banner: ' + globalVar);
 
+      // TODO: need to have rendered preview html before we can do this
+      setTimeout(function() { 
+        globalVar = getHtml5BannerType(); // get html5 banner type, save in global var
+        getAndBindFormFields(options); // get and bind form fields for the template
+      }, 100);
+
+    }());
+
+    helpers.addColorPickers();// add color pickers to form
+    // TODO: file upload helpers?
+    // TODO: crop select helpers?
+    updateBannerContent();// update banner content
+    settings.complete(); // perform complete callback functions
+  }
+
+  // get and bind form fields for template
+  // TODO: promisify!
+  function getAndBindFormFields(options) {
+    var fields = {}; // empty fields object
+    console.log(' > Will parse form fields..');
+
+    if(!options) options = {templateId: template_key} // handle empty options
+
+    // get & prepare field rules for template
+    adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
+      
+      console.log(' >> We got this set of rules:');
+      console.log(rules);
+
+      $.each(rules.fields, function(key, field) { // loop through list of fields to build rules
+        fields[field.name] = getSelector(field); // find selector for field
+      });
+
+      formFields = fields; // save fields object globally 
+
+      // debug form fields rules
+      console.log(' >> Updated list of field selectors << ');
+      console.log(fields);
+
+      // setup form event listeners
+      bindFormFields(fields);
+    });
+  }
+
+  // additional exports
+  this.getAndBindFormFields = getAndBindFormFields;
+
+  // bind form events to update html5 live preview
+  function bindFormFields(fields) {
+
+    console.log(' >> Binding form field events...');
+
+    // text fields change
+    $('input[prop=text]').on('input', function() {
+      $(fields[$(this).attr('name')]).html($(this).val());
+    });
+
+    // image fields change
+    $('input[prop=image]').on('input', function() {
+      var name = $(this).attr('name');
+      var value = $(this).val();
+      replaceImage(name, value, fields[name]);
+    });
+
+    // handle formats dropdown change
+    $('select[name=formats]').change(function(event) {
+      switchFormat($(this).find(':selected').text());
+    });
+  }
+
+  function updateBannerContent() {
     // trigger state change on all text fields in order
     // to get the correct content in the ad.
-    // TODO: should use callback
-    setTimeout(function() { $('input[prop=text]').trigger('input'); }, 600);
-    setTimeout(function() { $('input[prop=text]').trigger('input'); }, 1100);
+    performMultiple(updateFields, [0, 1000]);
+  }
 
-    settings.complete();
+  function updateFields() {
+    console.log('Will update fields...');
+    $('input[prop=text], input[prop=image], input[prop=color]').trigger('input');
+  }
+
+  function performMultiple(func, times) {
+    $.each(times, function(i, time) {
+      setTimeout(func, time);
+    });
+  }
+
+  function replaceImage(name, value, field) {
+    console.log('Will replace image: ' + name);
+    console.log(field);
+
+    if(field.attr == 'img') {
+      replaceImageElement(field.target, value);
+    } else {
+      $(field.target).css('background-image', 'url("' + value + '")');
+    }
+  }
+
+  // get type of html5 banner
+  // @returns 'adrapid', 'edge' or 'iframe'
+  function getHtml5BannerType(element) {
+    if(!element) element = '#target';
+    if($(element + ' .adrapid').length) return 'adrapid';
+    if($('#Stage').length) return 'edge';
+    if($(element + ' iframe').length) return 'iframe';
+    return 'unknown'; // did not detect banner type
   }
 
   // find selector for name
   function getSelector(field) {
     var name = field.name;
-    // console.log('Calling getSelector function for: ' + name);
-    
-    // find selector for field name
-    // TODO: update priority order
+    var target;
 
     // check for internal replacement for image
+    // TODO: split this into separate function ..
     if(field.type == 'image') { // && field.replace [?]
-      var target = findImageElement(field); // using helper
-
-      console.log('Got this image!!');
-      console.log(target);
+      target = findImageElement(field); // using helper
 
       // check for other targets
-      // (redundant?)
       if($('#' + field.name).length) target = '#' + field.name;
 
       // - check for existence of element with name
       // TODO: check if we should repl1ace background or img ? 
 
+      // redundant check for image..
+      // TODO: improve this!
+      if($('#iframe_result').length) {
+     
+        // pattern : #replacement
+        if(field.replace) {
+          var iframeItem = $('#iframe_result').contents().find('#' + field.replace);    
+          
+          if(iframeItem.length) {
+            console.log(' > found img @ #' + field.replace);
+
+            // return with 'img' change attrib...
+            return {
+              // returns an object
+              // TODO: set config for this
+              target: iframeItem,
+              attr: 'img', // intead of 'background'
+            };
+
+          }
+        }
+
+        // pattern : #name
+        if($('#iframe_result').contents().find('#' + name).length) {
+          console.log('We found element in iframe for field -' + name);
+          target = $('#iframe_result').contents().find('#' + name);
+        
+          // return with 'img' change attrib...
+          return {
+            // returns an object
+            // TODO: set config for this
+            target: target,
+            attr: 'img', // intead of 'background'
+          };
+
+        }
+        
+      }
+
+      console.log(' >> Now we return image object...');
       return {
         // returns an object
         // TODO: set config for this
@@ -307,6 +420,8 @@ var helpers = function(options) {
     // text fields / other:
 
     // #name
+    if($('#' + field.name + ' p').length) return $('#' + field.name + ' p');
+    if($('#' + name + ' p').length) return $('#' + name + ' p'); // durr
     if($('#' + name).length) return $('#' + name);
     
     // double __
@@ -323,13 +438,11 @@ var helpers = function(options) {
     if($('#Stage_' + name + ' p').length) return '#Stage_' + name + ' p';
     if($('#Stage_' + name).length) return '#Stage_' + name;
 
-    // look into the iframe as well...
-    if($('#iframe_result').contents().find('#' + name).length) return $('#iframe_result').contents().find('#' + name);
+    // no results yet, look into the iframe as well...
+    if($('#iframe_result').length) {
+      if($('#iframe_result').contents().find('#' + name).length) return $('#iframe_result').contents().find('#' + name);
+    }
 
-    // (to replace iframe content ...)
-    // $('#iframe_result').contents().find('#' + $(this).attr('name')).text($(this).val()); // replace in local iframe
-
-    // TODO: support for images
     // TODO: support for colors
     // TODO: support for spec
 
@@ -341,9 +454,91 @@ var helpers = function(options) {
     // ...
   }
 
+  function findIframeTextElement(field) {
+
+  }
+
+  function replaceImageElement(selector, newImage) {
+    if(typeof selector == 'array') {
+      console.log('Dealing with array..');
+      $.each(selector, function(i, el) {
+        replaceImageElement(el. newImage);
+      });
+    } else {
+      selector.attr({
+        'src': newImage,
+        'source': newImage // gwd needs this property as well
+      });
+    }
+
+  }
+
   function findImageElement(field) {
-    var target; // temp
+    var target;
     
+    // try find by replace images..
+    if(field.replace_images) {
+      console.log('Checking replace images');
+
+      // TODO: should not do the actual replace
+      if(field.replace_images instanceof Array) {
+        $.each(field.replace_images, function(i, image) {
+          var findStr = 'img[src="' + image + '"]';
+          var imgEl = $(findStr);
+
+          // gets
+          var iframeItem = $('#iframe_result').contents().find(findStr);    
+
+          if(imgEl.length) {
+            console.log(' ! Image found @ ' + findStr);
+            return imgEl;
+          } else {
+            // console.log(' - no image @ ' + findStr);
+          }
+
+          if(iframeItem) {
+            console.log(' Found in iframe! ' + findStr);
+           
+            // test replace
+            // TODO: get correct ID of image to replace ...
+            var rimg = $('input[name=img_1]').val();
+            replaceImageElement(iframeItem, rimg);
+
+            return iframeItem;
+          }
+
+        });
+      } else {
+        console.log(' >> Find single: ' + field.replace_images);
+      }
+
+    }
+
+
+    if(field.replace_ids) {
+      console.log('Checking replace images');
+
+      if(field.replace_ids instanceof Array) {
+      
+        // loop through items
+        $.each(field.replace_ids, function(i, image) {
+          var findStr = '#' + image;
+          var imgEl = $(findStr);
+
+          if(imgEl.length) {
+            console.log(' ! Image found @' + findStr);
+            return findStr;
+          } else {
+            // console.log(' - no image @ ' + findStr);
+          }
+        });
+      } else {
+        console.log(' > Find single: ' + field.replace_ids);
+      }
+
+    }
+
+
     if(field.replace) {
       var replaceString = field.replace.substring(0, field.replace.length - 4);
 
@@ -377,7 +572,7 @@ var helpers = function(options) {
       console.log(' >> Try find field in iframe, but failed - ' + field.name);
     }
 
-    return ''; // no image found
+    return '#noImg'; // no image found
   }
 
   // remove add depdendencies
@@ -399,47 +594,88 @@ var helpers = function(options) {
   // chcnage format helper
   function switchFormat(newFormat) {
     console.log(' -> Setting new format: ' + newFormat);
+    // $('#target').html('Loading...');
 
-    flushAd(); // remove current libraries for currently running ad
-    
-    $('#target').html('Loading...');
+    console.log(' >> Will do handling for banner type: ' + globalVar + ' ...');
 
-    // force-reload animation dependencies
-    setTimeout(function() {
-      $.getScript(edgeSrc, function() {
-        console.log('Force-reloaded animation libs!');
-      });
-    }, 100);
+    switch(globalVar) {
+      default:
+      break;
 
-    // get new live preview using helper
-    // TODO: only get new preview, do not trigger for mevetns..
-    setTimeout(function() {
-      console.log(' >> will get new preview');
-      console.log('template: ' + this.template_key);
-      console.log('format: ' + newFormat)
-      
-      // re-fetch preview using adrapid helper
-      // helpers.getLivePreview(this.template_key, newFormat);
-      reloadHtml5ForFormat(template_key, newFormat);
-    }, 400);
+      case 'adrapid':
+      break;
 
-    // trigger input re-render ....
-    setTimeout(function() { 
-      $('input').trigger('input');
-    }, 800);
-  
-    // setup test for banner - make sur it is loaded
-    setTimeout(function() {
-      html5BannerExists(function() {
-        console.log(' >> Error handling! try reload the banner...');
-        
-        $('#target').html('<h2>Fail</h2>').css('background', 'red');
+      case 'iframe':
+        console.log(' > We will reload the iframe..');
 
+        var dims = newFormat.split('x');
+        var currentSrc = $('#iframe_result').attr('src');
+        var newSrc = currentSrc.replace(currentFormat, newFormat);
+        currentFormat = newFormat; // update global var
+
+        // set iframe src, update dimensions
+        $('#iframe_result')
+          .attr('src', newSrc)
+          .width(dims[0])
+          .height(dims[1])
+        ;
+
+        // now we need to rebind fields ..
         setTimeout(function() {
-          reloadHtml5ForFormat(template_key, newFormat); // error callback
-        }, 1200);
-      });
-    }, 2222);
+          // TODO: re-populate rules ... 
+          // bindFormFields(formFields);
+          getAndBindFormFields();
+
+          // trigger fields update (after some timeout)
+          updateBannerContent();
+
+        }, 800); // needs to wait for iframe render ...
+
+
+      break;
+
+      case 'edge':
+      break;
+    }
+
+    // flushAd(); // remove current libraries for currently running ad
+    
+    // // force-reload animation dependencies
+    // setTimeout(function() {
+    //   $.getScript(edgeSrc, function() {
+    //     console.log('Force-reloaded animation libs!');
+    //   });
+    // }, 100);
+
+    // // get new live preview using helper
+    // // TODO: only get new preview, do not trigger for mevetns..
+    // setTimeout(function() {
+    //   console.log(' >> will get new preview');
+    //   console.log('template: ' + this.template_key);
+    //   console.log('format: ' + newFormat)
+      
+    //   // re-fetch preview using adrapid helper
+    //   // helpers.getLivePreview(this.template_key, newFormat);
+    //   reloadHtml5ForFormat(template_key, newFormat);
+    // }, 400);
+
+    // // trigger input re-render ....
+    // setTimeout(function() { 
+    //   $('input').trigger('input');
+    // }, 800);
+  
+    // // setup test for banner - make sur it is loaded
+    // setTimeout(function() {
+    //   html5BannerExists(function() {
+    //     console.log(' >> Error handling! try reload the banner...');
+        
+    //     $('#target').html('<h2>Fail</h2>').css('background', 'red');
+
+    //     setTimeout(function() {
+    //       reloadHtml5ForFormat(template_key, newFormat); // error callback
+    //     }, 1200);
+    //   });
+    // }, 2222);
 
   }
 
@@ -490,10 +726,20 @@ var helpers = function(options) {
 
   // handle color change for live preview
   function changeColor(target, color) {
+
+    // text
     if(target == 'color_text_field1') {
       $('#Stage div p').css('color', color);
+
+      // iframe
+      $('#iframe_result').contents().find('p, div, span').css('color', color);
+
+    // background
     } else if(target.indexOf('background') > -1) {
       $('#Stage').css('background-color', color);
+
+      // iframe
+      $('#iframe_result').contents().find('#gwd-ad').css('background-color', color);
 
       // remove previously set background image
       // TODO: remove name dependency
@@ -505,6 +751,9 @@ var helpers = function(options) {
       // TODO: need global value
       $('#Stage_Text3 p span').css('background-color', color); 
     
+      // iframe
+      $('#iframe_result').contents().find('#submitBtn').css('background-color', color);
+
     // cornercase: shape
     } else if(target.indexOf('_shape') > -1) {
       // TODO: need global value
@@ -516,8 +765,10 @@ var helpers = function(options) {
     }
   }
 
-
-  this.addUploadHelpers = function() {
+  /*
+   * Add upload helpers to a form
+   */
+  this.addUploadHelpers = function(options) {
     $('input[prop="image"]').each(function() {
       var elem = $(this), nn = elem.attr('name');
       $('<div id="' + nn + '-temp"></div>').insertAfter(elem);
@@ -538,9 +789,11 @@ var helpers = function(options) {
     return true;
   }
 
+  /*
+   * Add color pickers to a form
+   */
   this.addColorPickers = function() {
-    console.log('Adding color pickers...');
-
+    
     // utilize minicolor library if used on the page
     if (typeof $.minicolors !== 'undefined') {
       $('input[prop=color]').minicolors({
@@ -559,12 +812,24 @@ var helpers = function(options) {
     }
   }
 
+  /*
+   * Upload media through the AdRapid API
+   */
   this.uploadMedia = function(data, callback) {
     return adrapid.api_get('medias', false, data);
   }
 
-  this.getLivePreview = function(templateId, format) {
-    // TODO: add support for options!
+  /*
+   * Get a html5 live previe
+   */
+  this.getLivePreview = function(templateId, format, options) {
+    
+    // define default options
+    var settings = $.extend( {
+      strategy: 'inline', // inline or iframe
+    }, options);
+
+    globalVar = 'derp'; // test set global var
 
     this.loadPreviewDependencies(function() {         // make sure animation dependencies is loaded before loading the banner
       adrapid.getPreviewHtml5(templateId, format)             // get the banner animation content
@@ -609,7 +874,6 @@ var helpers = function(options) {
   }
 
 };
-
 
 // expose
 var helpers = new helpers();
