@@ -1,12 +1,7 @@
 /*
  * forms
  */
-#form label
-	width 100%
-	color altTextColor
 	
-form input, #form input
-
 input,
 select
 	width 100%
@@ -15,11 +10,103 @@ select
 	border 1px solid borderColor
 	padding .6em .4em
 
+
+// fixes for upload field
+.crop_upload input[type=file]
+	width 120%
+	// border 2px solid red !important
+	margin 0
+	float left
+	display block
+	position relative
+	left -30%
+
+
+
+/*
+ * checkboxes & radio buttons
+ */
+
+input[type=checkbox]
+	// display block
+	// border 4px solid #999 !important
+	float left
+	width auto
+	// margin-right .2em !important
+	// margin-top .2em !important
+	
+
+input[type=checkbox],
+input[type=radio] 
+	font-size: 20px !important;
+	// display: inline-block !important;
+	// line-height: 1em !important;
+	// margin: 0 0.25em 0 0 !important;
+	// padding: 0 !important;
+	// width: 1.25em !important;
+	// height: 1.25em !important;
+	// -webkit-border-radius: 0.25em !important;
+	// vertical-align: text-top !important;
+	// 
+
+// input.ratio
+// 	max-width 70px
+// 	text-align center !important
+
+
+
+
+
+/*
+ * labels
+ */
+
+// label
+//   width 100% !important
+//   display block
+
+#form label
+	width 100%
+	color altTextColor
+
+
+label.inline-label
+	border 1px solid blue !important
+
+
+
+
+/*
+ * fixes, corner-cases & workarounds
+ */
+
+label
+	// border 1px dashed red !important
+	min-width 60% !important
+	
 #label, h3
 	color #333
 	
 #form .images
 	display flex
 
-label.inline-label
-	border 1px solid blue !important
+
+.wey  select
+	max-width 100% !important
+
+#boxes
+	margin 0 0 1em 0 !important
+
+
+// additional form fixes
+// .inspect
+//   input[name=width], input[name=height],
+//   input[name=width_actual], input[name=height_actual]
+//     max-width 50px
+//     float left
+
+// input[type=range]
+//   float left
+//   max-width 90px // TODO: need larger!
+
+

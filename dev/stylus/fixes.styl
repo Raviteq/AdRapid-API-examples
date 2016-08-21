@@ -65,13 +65,11 @@ form#form
   border-bottom 1px solid borderColor
 
 .bordered
-  border 1px solid lighten(backgroundColor, 20%)
+  border 1px red !important
   
   h3 
     padding .5em 1em 0 1em
 
-// #crop_form
-//   padding 0 1em 0 0
 
 #init-crop
   width 68px
@@ -93,10 +91,11 @@ form#form
   width 100%
 
   .box
-    border 1px solid purple !important
+    // border 1px solid purple !important // do the border!
     max-width 600px
     max-height 600px
     valign()
+    margin 1em
 
     img
       // width 100%
@@ -123,3 +122,44 @@ form#form
 
 #boxes .box select
   width 111%
+  
+
+pre, .break
+  word-wrap break-word !important
+  max-width 500px
+  
+
+.fatter
+  flex-grow 2
+
+.smaller 
+  flex-shrink 2
+
+.left
+  float left
+  width auto !important
+
+.center
+  margin 0px auto
+
+.box
+  display flex
+
+.flex-center
+  align-self center
+  margin 0px auto
+  border 1px solid red !important
+
+  input
+    width 100% !important
+    max-width 90% !important
+
+
+.bottomspace
+  margin-bottom 2em
+
+
+  box img 
+    border 1px solid #ccc !important
+    min-width 100% !important
+    min-height 150px

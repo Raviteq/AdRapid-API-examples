@@ -186,6 +186,7 @@ table input
  */
 
 
+.boxes, 
 #boxes
 	width 100% !important
 	display flex
@@ -206,22 +207,22 @@ table input
 
 .ba 
 	padding .6em
-	// border: 1px solid lime
-	// align()
 
 .smaller-boxes .box
 	flex-basis 25% !important
 
+	input
+		max-width 95% !important
+
 .even-smaller-boxes .box
 	flex-basis 12% !important
+	
+.bigbox
+	flex-basis 100% !important
+	clear both
 
 
-.box
-	// padding: .6em
-
-	input, label, select
-		// width 100% !important
-		// clear: both !important;
-		// display block
-		// margin 0
-		// padding 0
+.full, input.full
+	width auto !important
+	width 210% !important
+	max-width 210% !important
