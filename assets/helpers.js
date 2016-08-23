@@ -433,9 +433,20 @@ var helpers = function(options) {
     if(field.attr == 'img') {
       replaceImageElement(field.target, value);
     } else {
-      // TODO: support for arrays
-      $(field.target).css('background-image', 'url("' + value + '")');
+      replaceImageBackground($(field.target), value);
     }
+
+    // repeat the image replacement process after a short timeout.
+    // solves an issue where the image would not be replaced on 
+    // the first attempt.
+    setTimeout(function() {
+      if(field.attr == 'img') {
+        replaceImageElement(field.target, value);
+      } else {
+        replaceImageBackground($(field.target), value);
+      }
+    }, 200);
+
   }
 
   // get type of html5 banner
@@ -558,7 +569,6 @@ var helpers = function(options) {
 
   function replaceImageElement(selector, newImage) {
     if(typeof selector == 'array') {
-      console.log('Dealing with array..');
       $.each(selector, function(i, el) {
         replaceImageElement(el. newImage);
       });
@@ -568,7 +578,17 @@ var helpers = function(options) {
         'source': newImage // gwd needs this property as well
       });
     }
+  }
 
+  function replaceImageBackground(selector, newImage) {
+    console.log('Replace image background...');
+    if(typeof selector == 'array') {
+      $.each(selector, function(i, el) {
+        replaceImageBackground(el. newImage);
+      });
+    } else {
+      selector.css('background-image', 'url("' + newImage + '")');
+    }
   }
 
   function findImageElement(field) {
