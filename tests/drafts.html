@@ -113,7 +113,8 @@
         
         // get the form for the template
         helpers.getForm(template_key, {
-          complete: handleDrafts // setup drafts handling when the form is created
+          complete: handleDrafts, // setup drafts handling when the form is created
+          formats: false // disable formats dropdown
         });
       
         // get the live preview, bind form events
