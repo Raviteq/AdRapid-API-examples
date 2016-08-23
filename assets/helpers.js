@@ -51,6 +51,9 @@ var helpers = function(options) {
       form += form_field(field);
     });
 
+    // add url field at bottom of form
+    form += form_field({name: 'URL', label: 'URL', type: 'URL', default: ''});
+
     // close form
     form += '</div>';
 
