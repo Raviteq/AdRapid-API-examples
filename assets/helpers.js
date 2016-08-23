@@ -1,5 +1,7 @@
-// frontend helpers for AdRapid API example implementations
-// Documentation is available at http://raviteq.github.io/adrapid-api/
+/*
+ * Frontend helpers for AdRapid API example implementations
+ * Documentation is available at http://raviteq.github.io/adrapid-api/
+ */
 
 var helpers = function(options) {
 
@@ -18,7 +20,8 @@ var helpers = function(options) {
   };
 
   // global vars f0r html5 live preview
-  var globalVar = 'herp'; //  temp global var
+  var bannerType = ''; //  temp global var
+  var globalRules = false; // global rules var
   var currentFormat = '300x250'; // contains current format of html5 banner
   var formFields; // contains form field rules
   var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js'; // path to Edge
@@ -240,21 +243,80 @@ var helpers = function(options) {
     // initialize function - is only run once 
     (function init() {
       console.log('initialize html5 live preview...');
-      console.log(' > type of banner: ' + globalVar);
+      console.log(' > type of banner: ' + bannerType);
 
       // TODO: need to have rendered preview html before we can do this
       setTimeout(function() { 
-        globalVar = getHtml5BannerType(); // get html5 banner type, save in global var
+        bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
         getAndBindFormFields(options); // get and bind form fields for the template
       }, 100);
 
     }());
 
-    helpers.addColorPickers();// add color pickers to form
+    // add color pickers to form
     // TODO: file upload helpers?
     // TODO: crop select helpers?
-    updateBannerContent();// update banner content
-    settings.complete(); // perform complete callback functions
+    helpers.addColorPickers();
+
+    // update banner content
+    updateBannerContent();
+
+    // perform complete callback functions
+    settings.complete(); 
+  }
+
+  function getTemplateSelectors(rules) {
+    var fields = {};
+
+    // loop through list of fields to build rules
+    $.each(rules.fields, function(key, field) { 
+      // find selector for field
+      fields[field.name] = getSelector(field); 
+    });
+
+    // return prepared fields
+    return fields;
+  }
+
+  function getFormFields(options, callback) {
+
+    if(globalRules) {
+      // re-append
+      console.log(' > Already have rules!');
+
+      callback(formFields); // do callback with global rules
+    } else {
+      var fields = {};
+
+      // get rules
+      console.log(' > Need to get new rules!');
+
+      // set new rules
+      adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
+        
+        // set form fields
+        // $.each(rules.fields, function(key, field) { // loop through list of fields to build rules
+        //   // find selector for field
+        //   fields[field.name] = getSelector(field); 
+        // });
+
+        // using new
+        fields = getTemplateSelectors(rules);
+
+        // save fields object globally 
+        formFields = fields; 
+        globalRules = fields;
+
+        // debug form fields rules
+        // console.log(' >> Updated list of field selectors << ');
+        // console.log(fields);
+
+        // do callback with results
+        callback(fields);
+      });
+    }
+
+
   }
 
   // get and bind form fields for template
@@ -264,17 +326,31 @@ var helpers = function(options) {
     console.log(' > Will parse form fields..');
 
     if(!options) options = {templateId: template_key} // handle empty options
+    
+    // getFormFields(options, function(fields) {
+    //   fields = getTemplateSelectors(fields);
+    //   bindFormFields(fields);
+    // });
+
+    if(globalRules) {
+      // re-append
+      console.log(' > Already have rules!');
+    } else {
+      // get rules
+      console.log(' > Need to get new rules!');
+
+      // set new
+      globalRules = 'some rules';
+    }
 
     // get & prepare field rules for template
     adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
       
-      console.log(' >> We got this set of rules:');
-      console.log(rules);
+      // console.log(' >> We got this set of rules:');
+      // console.log(rules);
 
-      $.each(rules.fields, function(key, field) { // loop through list of fields to build rules
-        fields[field.name] = getSelector(field); // find selector for field
-      });
-
+      var fields = getTemplateSelectors(rules);
+      
       formFields = fields; // save fields object globally 
 
       // debug form fields rules
@@ -284,6 +360,7 @@ var helpers = function(options) {
       // setup form event listeners
       bindFormFields(fields);
     });
+
   }
 
   // additional exports
@@ -312,6 +389,14 @@ var helpers = function(options) {
     });
   }
 
+  function flashElement(selector) {
+    selector.addClass('border');
+    
+    setTimeout(function() {
+      selector.removeClass('border');
+    }, 1500);
+  }
+
   function updateBannerContent() {
     // trigger state change on all text fields in order
     // to get the correct content in the ad.
@@ -330,12 +415,25 @@ var helpers = function(options) {
   }
 
   function replaceImage(name, value, field) {
-    console.log('Will replace image: ' + name);
+    
+    if(!field) field = fields[name]; // ...
+
+    // do not replace empty fields
+    if(!value || value == 'http://test.adrapid.com/') {
+       // console.log('No value!');
+      return false;
+    } 
+    // else {
+    //   console.log(value);
+    // }
+
+    console.log('Replace image: ' + name + ' -> ' + value);
     console.log(field);
 
     if(field.attr == 'img') {
       replaceImageElement(field.target, value);
     } else {
+      // TODO: support for arrays
       $(field.target).css('background-image', 'url("' + value + '")');
     }
   }
@@ -490,7 +588,7 @@ var helpers = function(options) {
           var iframeItem = $('#iframe_result').contents().find(findStr);    
 
           if(imgEl.length) {
-            console.log(' ! Image found @ ' + findStr);
+            console.log(' ! Image found @ ' + findStr); 
             return imgEl;
           } else {
             // console.log(' - no image @ ' + findStr);
@@ -596,9 +694,9 @@ var helpers = function(options) {
     console.log(' -> Setting new format: ' + newFormat);
     // $('#target').html('Loading...');
 
-    console.log(' >> Will do handling for banner type: ' + globalVar + ' ...');
+    console.log(' >> Will do handling for banner type: ' + bannerType + ' ...');
 
-    switch(globalVar) {
+    switch(bannerType) {
       default:
       break;
 
@@ -829,7 +927,7 @@ var helpers = function(options) {
       strategy: 'inline', // inline or iframe
     }, options);
 
-    globalVar = 'derp'; // test set global var
+    bannerType = 'html5'; // set global var
 
     this.loadPreviewDependencies(function() {         // make sure animation dependencies is loaded before loading the banner
       adrapid.getPreviewHtml5(templateId, format)             // get the banner animation content
@@ -848,9 +946,23 @@ var helpers = function(options) {
     });
   }
 
-  this.getForm = function(templateId) {
+  this.getForm = function(templateId, settings) {
+
+    // setup options
+    var options = $.extend( {
+      selector: '#form',
+      target: '#target',
+      formats: true, // include formats dropdown
+      form: '',
+      before: func,
+      // complete: func,
+      complete: function() {
+        console.log(' >>>> Created form!');
+      }
+    }, settings);
+
     return adrapid.rules(templateId).then(function(rules) {   // get the rules for the template
-      helpers.buildForm(rules, false);
+      helpers.buildForm(rules, false, options);
     });
   }
 
