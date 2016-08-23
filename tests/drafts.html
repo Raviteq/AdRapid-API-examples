@@ -12,7 +12,7 @@
       <div id="templates">
         <div id="description">
           <h3>Drafts example</h3>
-          <p>This is an example showcasing how handling of drafts can be implemented. To acheive this, we need a mechanism to store and retreive the form data. For this example we simple save the form data in the browser using <code>localStorage</code>, but any other mechanism (for example using a database) will work in the same way. </p>
+          <p>This is an example showcasing how handling of drafts can be implemented. To acheive this, we need a mechanism to store and retreive the form data. For this example we simple save the form data in the browser using <code>localStorage</code>, but any other mechanism (ie. using a database) will work in the same way. </p>
           <p>Since we are using the html5 live preview, we only need to change the form fields to trigger an update of the preview.</p>
         </div>
       </div>
@@ -33,22 +33,32 @@
     <script type="text/javascript">
       /*
        * Drafts example - load and save drafts data.
-       * In this example we are using localStorage, but we could use for
-       * example a database for saving the data.
+       * In this example we are using localStorage to save the draft
+       * directly in the browser. In a real-world implementation we 
+       * would probably save the draft(s) data in a database.
        */
       
+      // configuration
       var api_key = '6271f323ff24875b74569ebc76eafa7c8ce0aa85';
       var template_key = 'fa1634c5f3e7aefc5cd5db1bdcc1e44d0e38bab8';
       var adrapid = new AdRapid(api_key);
       
+      // get a previously saved draft
       function getDraft(event) {
         event.preventDefault();
-      
         console.log('Loading draft');
-        console.log(localStorage.getItem('draft'));
       
-        // iterate over draft data, change form fields to our saved data
-        $.each(JSON.parse(localStorage.getItem('draft')), function(key, val) {
+        // Get the draft data.
+        // In this case we are using localStorage to save the draft
+        // data in the browser. In a real-world scenario we would 
+        // probably retreive the draft from a database.
+        // The draft data is an JSON object, each key/value pair 
+        // corresponding to a form field. 
+        var draft = localStorage.getItem('draft');
+      
+        // Iterate over the draft data, change values of the form 
+        // fields to the values stored in our draft.
+        $.each(JSON.parse(draft), function(key, val) {
           $('input[name=' + key + ']')
             .val(val) // set the value of the form field
             .trigger('input'); // trigger update of the form field 
@@ -57,16 +67,30 @@
       
       }
       
+      // save the current state of a form into a draft 
       function saveDraft(event) {
         event.preventDefault();
         console.log('Saving draft');
       
-        // concat the form data into a string
-        var draft = JSON.stringify($('form#form').serializeObject());
+        // Concat the form data into a JSON string
+        var draft = JSON.stringify($('#form').serializeObject());
       
-        // saving draft data somewhere - in this case localhost
+        // Save the draft data somewhere - in this case to localStorage.
+        // In a real-world scenario we would probably save the user ID 
+        // as well as the ID of the template used.
         localStorage.setItem('draft', draft);
+      }
       
+      // setup drafts handling for a template - is fired after form is loaded
+      function handleDrafts() {
+        
+        // add save/load draft buttons
+        $('#form').prepend('<button id="load">Load draft</button>');
+        $('#form').prepend('<button id="save">Save draft</button>');
+        
+        // setup events
+        $('button#load').click(getDraft);
+        $('button#save').click(saveDraft);
       }
       
       // wrappwr function
@@ -81,23 +105,19 @@
         // move it 
         $("#form").detach().appendTo('#templates');
       
-        // wait for a while to allow the
-        setTimeout(function() {
-          $('#form').prepend('<button id="load">Load draft</button>');
-          $('#form').prepend('<button id="save">Save draft</button>');
-          
-          // setup events
-          $('button#load').click(getDraft);
-          $('button#save').click(saveDraft);
-        }, 600);
-      
       })();
       
       // set up live preview helper - available in preview example implementation
       function getLivePreview(template_key) {
-        helpers.template_key = template_key;      // store template key in helpers object.. secret fix
-        helpers.getForm(template_key);            // get the form for the template
-        helpers.getLivePreview(template_key);     // get the live preview, bind form events
+        helpers.template_key = template_key; // store template key in helpers object
+        
+        // get the form for the template
+        helpers.getForm(template_key, {
+          complete: handleDrafts // setup drafts handling when the form is created
+        });
+      
+        // get the live preview, bind form events
+        helpers.getLivePreview(template_key); 
       }
     </script>
   </body>
