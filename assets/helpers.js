@@ -167,7 +167,6 @@ var helpers = function(options) {
 
   this.loadPreviewDependencies = function(callback) {
     if(typeof AdobeEdge == 'undefined') {
-      console.log('Loading animation dependencies...');
       $.getScript(edgeSrc, function() {
         if(callback) callback();
       });
@@ -181,7 +180,6 @@ var helpers = function(options) {
     
     // if we have html content, load it 
     if(data.content) {
-      console.log('Load banner html content...');
       $('#target').html(data.content);
     }
 
@@ -204,13 +202,11 @@ var helpers = function(options) {
       var wdims = $('script#ad-preview').attr('data-dimensions').split('x');
       $('#target').width(wdims[0]).height(wdims[1]);
       
-      console.log('Appended animation...');
     } else {
       // try to append the script // ...
       $('head').append(data.script);
     }
 
-    console.log('Appended ? ');
     if(callback) callback();
     return data;
   }
@@ -221,8 +217,6 @@ var helpers = function(options) {
     
     // debug
     // if(options) {
-    //   console.log('We have options!');
-    //   console.log(options);
     // }
 
     // TODO: should utilize an initialization function,
@@ -242,8 +236,6 @@ var helpers = function(options) {
 
     // initialize function - is only run once 
     (function init() {
-      console.log('initialize html5 live preview...');
-      console.log(' > type of banner: ' + bannerType);
 
       // TODO: need to have rendered preview html before we can do this
       setTimeout(function() { 
@@ -282,14 +274,12 @@ var helpers = function(options) {
 
     if(globalRules) {
       // re-append
-      console.log(' > Already have rules!');
 
       callback(formFields); // do callback with global rules
     } else {
       var fields = {};
 
       // get rules
-      console.log(' > Need to get new rules!');
 
       // set new rules
       adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
@@ -308,8 +298,6 @@ var helpers = function(options) {
         globalRules = fields;
 
         // debug form fields rules
-        // console.log(' >> Updated list of field selectors << ');
-        // console.log(fields);
 
         // do callback with results
         callback(fields);
@@ -323,7 +311,6 @@ var helpers = function(options) {
   // TODO: promisify!
   function getAndBindFormFields(options) {
     var fields = {}; // empty fields object
-    console.log(' > Will parse form fields..');
 
     if(!options) options = {templateId: template_key} // handle empty options
     
@@ -334,10 +321,8 @@ var helpers = function(options) {
 
     if(globalRules) {
       // re-append
-      console.log(' > Already have rules!');
     } else {
       // get rules
-      console.log(' > Need to get new rules!');
 
       // set new
       globalRules = 'some rules';
@@ -346,16 +331,12 @@ var helpers = function(options) {
     // get & prepare field rules for template
     adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
       
-      // console.log(' >> We got this set of rules:');
-      // console.log(rules);
 
       var fields = getTemplateSelectors(rules);
       
       formFields = fields; // save fields object globally 
 
       // debug form fields rules
-      console.log(' >> Updated list of field selectors << ');
-      console.log(fields);
 
       // setup form event listeners
       bindFormFields(fields);
@@ -369,7 +350,6 @@ var helpers = function(options) {
   // bind form events to update html5 live preview
   function bindFormFields(fields) {
 
-    console.log(' >> Binding form field events...');
 
     // text fields change
     $('input[prop=text]').on('input', function() {
@@ -404,7 +384,6 @@ var helpers = function(options) {
   }
 
   function updateFields() {
-    console.log('Will update fields...');
     $('input[prop=text], input[prop=image], input[prop=color]').trigger('input');
   }
 
@@ -420,15 +399,11 @@ var helpers = function(options) {
 
     // do not replace empty fields
     if(!value || value == 'http://test.adrapid.com/') {
-       // console.log('No value!');
       return false;
     } 
     // else {
-    //   console.log(value);
     // }
 
-    console.log('Replace image: ' + name + ' -> ' + value);
-    console.log(field);
 
     if(field.attr == 'img') {
       replaceImageElement(field.target, value);
@@ -484,7 +459,6 @@ var helpers = function(options) {
           var iframeItem = $('#iframe_result').contents().find('#' + field.replace);    
           
           if(iframeItem.length) {
-            console.log(' > found img @ #' + field.replace);
 
             // return with 'img' change attrib...
             return {
@@ -499,7 +473,6 @@ var helpers = function(options) {
 
         // pattern : #name
         if($('#iframe_result').contents().find('#' + name).length) {
-          console.log('We found element in iframe for field -' + name);
           target = $('#iframe_result').contents().find('#' + name);
         
           // return with 'img' change attrib...
@@ -514,7 +487,6 @@ var helpers = function(options) {
         
       }
 
-      console.log(' >> Now we return image object...');
       return {
         // returns an object
         // TODO: set config for this
@@ -581,7 +553,6 @@ var helpers = function(options) {
   }
 
   function replaceImageBackground(selector, newImage) {
-    console.log('Replace image background...');
     if(typeof selector == 'array') {
       $.each(selector, function(i, el) {
         replaceImageBackground(el. newImage);
@@ -596,7 +567,6 @@ var helpers = function(options) {
     
     // try find by replace images..
     if(field.replace_images) {
-      console.log('Checking replace images');
 
       // TODO: should not do the actual replace
       if(field.replace_images instanceof Array) {
@@ -608,14 +578,11 @@ var helpers = function(options) {
           var iframeItem = $('#iframe_result').contents().find(findStr);    
 
           if(imgEl.length) {
-            console.log(' ! Image found @ ' + findStr); 
             return imgEl;
           } else {
-            // console.log(' - no image @ ' + findStr);
           }
 
           if(iframeItem) {
-            console.log(' Found in iframe! ' + findStr);
            
             // test replace
             // TODO: get correct ID of image to replace ...
@@ -627,14 +594,12 @@ var helpers = function(options) {
 
         });
       } else {
-        console.log(' >> Find single: ' + field.replace_images);
       }
 
     }
 
 
     if(field.replace_ids) {
-      console.log('Checking replace images');
 
       if(field.replace_ids instanceof Array) {
       
@@ -644,14 +609,11 @@ var helpers = function(options) {
           var imgEl = $(findStr);
 
           if(imgEl.length) {
-            console.log(' ! Image found @' + findStr);
             return findStr;
           } else {
-            // console.log(' - no image @ ' + findStr);
           }
         });
       } else {
-        console.log(' > Find single: ' + field.replace_ids);
       }
 
     }
@@ -668,10 +630,8 @@ var helpers = function(options) {
         if($('#Stage_' + replaceString).length) return '#Stage_' + replaceString;                
         
       } else {
-        console.log('replaceString missmatch..');
       }
     } else {
-      console.log('No replace conf..'); // = no 'replace' property in rules - its all good
     }
 
     // additional checks
@@ -684,10 +644,8 @@ var helpers = function(options) {
     
     // rrr
     if(specD) {
-      console.log(' >> We have iframe field !! - ' + field.name);
       // .text($(this).val());
     } else {
-      console.log(' >> Try find field in iframe, but failed - ' + field.name);
     }
 
     return '#noImg'; // no image found
@@ -711,10 +669,8 @@ var helpers = function(options) {
 
   // chcnage format helper
   function switchFormat(newFormat) {
-    console.log(' -> Setting new format: ' + newFormat);
     // $('#target').html('Loading...');
 
-    console.log(' >> Will do handling for banner type: ' + bannerType + ' ...');
 
     switch(bannerType) {
       default:
@@ -724,7 +680,6 @@ var helpers = function(options) {
       break;
 
       case 'iframe':
-        console.log(' > We will reload the iframe..');
 
         var dims = newFormat.split('x');
         var currentSrc = $('#iframe_result').attr('src');
@@ -761,16 +716,12 @@ var helpers = function(options) {
     // // force-reload animation dependencies
     // setTimeout(function() {
     //   $.getScript(edgeSrc, function() {
-    //     console.log('Force-reloaded animation libs!');
     //   });
     // }, 100);
 
     // // get new live preview using helper
     // // TODO: only get new preview, do not trigger for mevetns..
     // setTimeout(function() {
-    //   console.log(' >> will get new preview');
-    //   console.log('template: ' + this.template_key);
-    //   console.log('format: ' + newFormat)
       
     //   // re-fetch preview using adrapid helper
     //   // helpers.getLivePreview(this.template_key, newFormat);
@@ -785,7 +736,6 @@ var helpers = function(options) {
     // // setup test for banner - make sur it is loaded
     // setTimeout(function() {
     //   html5BannerExists(function() {
-    //     console.log(' >> Error handling! try reload the banner...');
         
     //     $('#target').html('<h2>Fail</h2>').css('background', 'red');
 
@@ -806,7 +756,6 @@ var helpers = function(options) {
         height: dims[1],
       });
 
-      console.log('Updating container dimensions. Set format = ' + dims[0] + 'x' + dims[1] + ' (' + $('#target').width() + 'px is container)');
     }, 222);
   }
 
@@ -814,7 +763,6 @@ var helpers = function(options) {
   function reloadHtml5ForFormat(template_key, format) {
     adrapid.getPreviewHtml5(template_key, format) 
       .then(function(data) {
-        console.log('xxx-- Loaded html5 preview...');
 
         data.templateId = template_key;               // save template ID, is needed later
         
@@ -830,12 +778,9 @@ var helpers = function(options) {
   // test existance of html5 banner in page
   function html5BannerExists(failCallback) {
     var findElem = $('#Stage_Text');
-    console.log(findElem);
 
     if(findElem.length == 1) {
-      console.log(' HAVE html5 banner!');
     } else {
-      console.log(' MISSING html5 banner!');
 
       // if its missing, we can try reload
       if(failCallback) failCallback();
@@ -952,8 +897,6 @@ var helpers = function(options) {
     this.loadPreviewDependencies(function() {         // make sure animation dependencies is loaded before loading the banner
       adrapid.getPreviewHtml5(templateId, format)             // get the banner animation content
         .then(function(data) {
-          console.log('-- Loaded html5 preview... [for the first time]');
-          // console.log(data);
 
           if(format) setElementDims(format);          // set dimensions of preview container
           
@@ -977,7 +920,6 @@ var helpers = function(options) {
       before: func,
       // complete: func,
       complete: function() {
-        console.log(' >>>> Created form!');
       }
     }, settings);
 
