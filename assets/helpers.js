@@ -169,6 +169,7 @@ var helpers = function(options) {
   // ---------------------------------------------------
 
   this.loadPreviewDependencies = function(callback) {
+    // TODO: load correct dependencies depending on the banner type
     if(typeof AdobeEdge == 'undefined') {
       $.getScript(edgeSrc, function() {
         if(callback) callback();
@@ -240,11 +241,11 @@ var helpers = function(options) {
     // initialize function - is only run once 
     (function init() {
 
-      // TODO: need to have rendered preview html before we can do this
-      setTimeout(function() { 
+      // wait for iframe to finish loading
+      $('iframe').load(function() {
         bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
         getAndBindFormFields(options); // get and bind form fields for the template
-      }, 100);
+      });
 
     }());
 
