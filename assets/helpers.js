@@ -20,6 +20,7 @@ var helpers = function(options) {
   };
 
   // global vars f0r html5 live preview
+  var bannerState = false;
   var bannerType = ''; //  temp global var
   var globalRules = false; // global rules var
   var currentFormat = '300x250'; // contains current format of html5 banner
@@ -230,10 +231,6 @@ var helpers = function(options) {
     // debug
     // if(options) {
     // }
-
-    // TODO: should utilize an initialization function,
-    // to avoid doing look-ups every time we update an
-    // text field
     
     // empty field obj, will be populated with fieldName:elementSelector pairs
     // is also mapped to global formFields object
@@ -251,14 +248,19 @@ var helpers = function(options) {
 
       // wait for iframe to finish loading
       $('iframe').load(function() {
+        bannerState = true;
         bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
         getAndBindFormFields(options); // get and bind form fields for the template
       });
 
+      // TODO: handle with status flag var so that we can avoid doing this multiple times
       // add a timeout in case we dont get the iframe load event
       setTimeout(function() {
-        bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
-        getAndBindFormFields(options); // get and bind form fields for the template
+        if(!bannerState) {
+          bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
+          getAndBindFormFields(options); // get and bind form fields for the template
+          bannerState = true;
+        }
       }, 700);
 
     }());
@@ -275,56 +277,39 @@ var helpers = function(options) {
   function getTemplateSelectors(rules, callback) {
     var fields = {};
     var max = rules.fields.length;
-    var c = 1;
+    var c = 0;
 
     // loop through list of fields to build rules
     $.each(rules.fields, function(key, field) { 
-      // find selector for field
-      fields[field.name] = getSelector(field); 
-
       ++c;
+      fields[field.name] = getSelector(field);  // find selector for field
 
       if(c == max) {
-
+        formFields = fields; // save fields object globally
         if(callback) callback(fields);
         return fields;
       }
     });
-
-    // return prepared fields
-    // return fields;
   }
 
   function getFormFields(options, callback) {
-
     if(globalRules) {
-
       getTemplateSelectors(globalRules, function(fields) {
         callback(fields);
       });
-
     } else {
-      // get rules
       var fields = {};
 
-
-      // set new rules
-      adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
-        
+      // get rules for the template, since they are not provided to this method
+      adrapid.rules(options.templateId).then(function(rules) {
+        globalRules = rules; // save rules globally
+      
+        // update form selectors  
         getTemplateSelectors(rules, function(fields) {
-
-          globalRules = rules; // save rules globally
-          formFields = fields; // save fields object globally
-
-          // debug form fields rules
-
           callback(fields);
-
         });
-
       });
     }
-
   }
 
   // get and bind form fields for template
@@ -335,11 +320,14 @@ var helpers = function(options) {
     getFormFields(options, function(fields) {
       bindFormFields(fields);
     });
-
   }
 
   // additional exports
   this.getAndBindFormFields = getAndBindFormFields;
+
+  // banner debug function
+  this.debugBanner = function() {
+  }
 
   // bind form events to update html5 live preview
   function bindFormFields(fields) {
@@ -443,9 +431,6 @@ var helpers = function(options) {
       // check for other targets
       if($('#' + field.name).length) target = '#' + field.name;
 
-      // - check for existence of element with name
-      // TODO: check if we should repl1ace background or img ? 
-
       // redundant check for image..
       // TODO: improve this!
       if($('#iframe_result').length) {
@@ -454,6 +439,7 @@ var helpers = function(options) {
         if(field.replace) {
           var iframeItem = $('#iframe_result').contents().find('#' + field.replace);    
           
+          // TODO: need to handle multiple selectors !!! 
           if(iframeItem.length) {
 
             // return with 'img' change attrib...
@@ -517,18 +503,27 @@ var helpers = function(options) {
 
     // no results yet, look into the iframe as well...
     if($('#iframe_result').length) {
-      if($('#iframe_result').contents().find('#' + name).length) return $('#iframe_result').contents().find('#' + name);
+      
+      if($('#iframe_result').contents().find('#' + name + ' p').length) {
+        return $('#iframe_result').contents().find('#' + name + ' p');
+      }
+
+      if($('#iframe_result').contents().find('#' + name).length) {
+        return $('#iframe_result').contents().find('#' + name);
+      }
     }
 
     // TODO: support for colors
-    // TODO: support for spec
 
-    // not found yet...
+    // element was still not found
     return '#notFound';
   }
 
+  // find text element selector for a field name - returns maximum 1 element only
   function findTextElement(field) {
-    // ...
+    var possibilities = [
+      '#Stage__' + name + ' p font span'
+    ];
   }
 
   function findIframeTextElement(field) {
@@ -684,6 +679,8 @@ var helpers = function(options) {
   function switchFormat(newFormat) {
     // $('#target').html('Loading...');
 
+    // reset banner state
+    bannerState = false;
 
     switch(bannerType) {
       default:
@@ -706,16 +703,19 @@ var helpers = function(options) {
           .height(dims[1])
         ;
 
+        // wait for iframe load event
+        $('iframe').load(function() {
+          getAndBindFormFields();
+          bannerState = true;
+        });
+
         // now we need to rebind fields ..
         setTimeout(function() {
-          // TODO: re-populate rules ... 
-          // bindFormFields(formFields);
-          getAndBindFormFields();
-
-          // trigger fields update (after some timeout)
-          updateBannerContent();
-
-        }, 800); // needs to wait for iframe render ...
+          if(!bannerState) {
+            getAndBindFormFields();
+            bannerState = true;
+          }
+        }, 800);
 
 
       break;
@@ -781,7 +781,6 @@ var helpers = function(options) {
         
         if(format) setElementDims(format); // set dimensios of preview container
         
-        setTimeout(function() { $('input').trigger('input'); }, 800); // setup input triggerning
         return data;                                // return data to next step
       })
       .then(helpers.appendAnimation)              // add the animation to the area 
@@ -903,18 +902,16 @@ var helpers = function(options) {
     // define default options
     var settings = $.extend( {
       strategy: 'inline', // inline or iframe
+      target: '#target', // target selector
     }, options);
 
     // get the banner type
-    // bannerType = 'html5';
     bannerType = getHtml5BannerType()
 
     this.loadPreviewDependencies(function() {         // make sure animation dependencies is loaded before loading the banner
-      adrapid.getPreviewHtml5(templateId, format)             // get the banner animation content
+      adrapid.getPreviewHtml5(templateId, format)     // get the banner animation content
         .then(function(data) {
-
           if(format) setElementDims(format);          // set dimensions of preview container
-          
           data.templateId = templateId;               // save template ID, is needed later
           return data;                                // return data to next step
         })
