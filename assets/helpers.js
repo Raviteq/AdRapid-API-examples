@@ -565,34 +565,15 @@ var helpers = function(options) {
         $.each(field.replace_images, function(i, image) {
           var findStr = 'img[src="' + image + '"]';
           var imgEl = $(findStr);
-
-          // gets
-          var iframeItem = $('#iframe_result').contents().find(findStr);    
-
+          
           if(imgEl.length) {
             // return imgEl; 
             outputs.push(imgEl);
           } else {
           }
-
-          // force replacement test
-          // if(iframeItem) {
-           
-          //   // test replace
-          //   // TODO: get correct ID of image to replace ...
-          //   var rimg = $('input[name=img_1]').val();
-          //   replaceImageElement(iframeItem, rimg);
-
-          //   return iframeItem;
-          // }
-
         });
-
-        // return prepared list of images
-        // return outputs;
       } else {
       }
-
     }
 
 
@@ -612,9 +593,7 @@ var helpers = function(options) {
         });
       } else {
       }
-
     }
-
 
     if(field.replace) {
       var replaceString = field.replace.substring(0, field.replace.length - 4);
@@ -634,15 +613,6 @@ var helpers = function(options) {
     // additional checks
     if($('#Stage__' + field.name).length) return '#Stage__' + field.name;
     if($('#Stage_' + field.name).length) return '#Stage_' + field.name;                
-
-    // look for results in iframe 
-    // var iframeD = $('#iframe_result').contents();
-    // var specD = iframeD.find('#' + field.name)
-    
-    // // rrr
-    // if(specD) {
-    // } else {
-    // }
 
     if(outputs) return outputs;
 
@@ -690,7 +660,6 @@ var helpers = function(options) {
       break;
 
       case 'iframe':
-
         var dims = newFormat.split('x');
         var currentSrc = $('#iframe_result').attr('src');
         var newSrc = currentSrc.replace(currentFormat, newFormat);
@@ -716,48 +685,11 @@ var helpers = function(options) {
             bannerState = true;
           }
         }, 800);
-
-
       break;
 
       case 'edge':
       break;
     }
-
-    // unloadLivePreview(); // remove current libraries for currently running ad
-    
-    // // force-reload animation dependencies
-    // setTimeout(function() {
-    //   $.getScript(edgeSrc, function() {
-    //   });
-    // }, 100);
-
-    // // get new live preview using helper
-    // // TODO: only get new preview, do not trigger for mevetns..
-    // setTimeout(function() {
-      
-    //   // re-fetch preview using adrapid helper
-    //   // helpers.getLivePreview(this.template_key, newFormat);
-    //   reloadHtml5ForFormat(template_key, newFormat);
-    // }, 400);
-
-    // // trigger input re-render ....
-    // setTimeout(function() { 
-    //   $('input').trigger('input');
-    // }, 800);
-  
-    // // setup test for banner - make sur it is loaded
-    // setTimeout(function() {
-    //   html5BannerExists(function() {
-        
-    //     $('#target').html('<h2>Fail</h2>').css('background', 'red');
-
-    //     setTimeout(function() {
-    //       reloadHtml5ForFormat(template_key, newFormat); // error callback
-    //     }, 1200);
-    //   });
-    // }, 2222);
-
   }
 
   function setElementDims(format) {
@@ -776,27 +708,12 @@ var helpers = function(options) {
   function reloadHtml5ForFormat(template_key, format) {
     adrapid.getPreviewHtml5(template_key, format) 
       .then(function(data) {
-
         data.templateId = template_key;               // save template ID, is needed later
-        
-        if(format) setElementDims(format); // set dimensios of preview container
-        
-        return data;                                // return data to next step
+        if(format) setElementDims(format);            // set dimensios of preview container
+        return data;                                  // return data to next step
       })
-      .then(helpers.appendAnimation)              // add the animation to the area 
+      .then(helpers.appendAnimation)                  // add the animation to the area 
     ;
-  }
-
-  // test existance of html5 banner in page
-  function html5BannerExists(failCallback) {
-    var findElem = $('#Stage_Text');
-
-    if(findElem.length == 1) {
-    } else {
-
-      // if its missing, we can try reload
-      if(failCallback) failCallback();
-    }
   }
 
   // handle color change for live preview
