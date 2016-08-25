@@ -169,6 +169,14 @@ var helpers = function(options) {
   // ---------------------------------------------------
 
   this.loadPreviewDependencies = function(callback) {
+    
+    // TODO: we need to know the banner type to load 
+    // the correct dependencies for the ad.
+    // if(bannerType != 'edge') {
+    //   if(callback) callback();
+    //   return;
+    // }
+    
     // TODO: load correct dependencies depending on the banner type
     if(typeof AdobeEdge == 'undefined') {
       $.getScript(edgeSrc, function() {
@@ -260,95 +268,71 @@ var helpers = function(options) {
     // TODO: crop select helpers?
     helpers.addColorPickers();
 
-    // update banner content
-    updateBannerContent();
-
     // perform complete callback functions
     settings.complete(); 
   }
 
-  function getTemplateSelectors(rules) {
+  function getTemplateSelectors(rules, callback) {
     var fields = {};
+    var max = rules.fields.length;
+    var c = 1;
 
     // loop through list of fields to build rules
     $.each(rules.fields, function(key, field) { 
       // find selector for field
       fields[field.name] = getSelector(field); 
+
+      ++c;
+
+      if(c == max) {
+
+        if(callback) callback(fields);
+        return fields;
+      }
     });
 
     // return prepared fields
-    return fields;
+    // return fields;
   }
 
   function getFormFields(options, callback) {
 
     if(globalRules) {
-      // re-append
 
-      callback(formFields); // do callback with global rules
+      getTemplateSelectors(globalRules, function(fields) {
+        callback(fields);
+      });
+
     } else {
+      // get rules
       var fields = {};
 
-      // get rules
 
       // set new rules
       adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
         
-        // set form fields
-        // $.each(rules.fields, function(key, field) { // loop through list of fields to build rules
-        //   // find selector for field
-        //   fields[field.name] = getSelector(field); 
-        // });
+        getTemplateSelectors(rules, function(fields) {
 
-        // using new
-        fields = getTemplateSelectors(rules);
+          globalRules = rules; // save rules globally
+          formFields = fields; // save fields object globally
 
-        // save fields object globally 
-        formFields = fields; 
-        globalRules = fields;
+          // debug form fields rules
 
-        // debug form fields rules
+          callback(fields);
 
-        // do callback with results
-        callback(fields);
+        });
+
       });
     }
-
 
   }
 
   // get and bind form fields for template
   // TODO: promisify!
   function getAndBindFormFields(options) {
-    var fields = {}; // empty fields object
-
     if(!options) options = {templateId: template_key} // handle empty options
     
-    // getFormFields(options, function(fields) {
-    //   fields = getTemplateSelectors(fields);
-    //   bindFormFields(fields);
-    // });
-
-    if(globalRules) {
-      // re-append
-    } else {
-      // get rules
-
-      // set new
-      globalRules = 'some rules';
-    }
-
-    // get & prepare field rules for template
-    adrapid.rules(options.templateId).then(function(rules) { // get rules for the template, since they are not provided to this method
-      
-
-      var fields = getTemplateSelectors(rules);
-      
-      formFields = fields; // save fields object globally 
-
-      // debug form fields rules
-
-      // setup form event listeners
+    getFormFields(options, function(fields) {
       bindFormFields(fields);
     });
 
@@ -377,6 +361,8 @@ var helpers = function(options) {
       switchFormat($(this).find(':selected').text());
     });
 
+    // trigger update event to update banner content
+    updateBannerContent();
   }
 
   function flashElement(selector) {
@@ -390,7 +376,8 @@ var helpers = function(options) {
   function updateBannerContent() {
     // trigger state change on all text fields in order
     // to get the correct content in the ad.
-    performMultiple(updateFields, [0, 1000]);
+    updateFields(); // update / replace all form fields once only
+    // performMultiple(updateFields, [0, 1000]); // perform multiple times to make sure fields are replaced
   }
 
   function updateFields() {
@@ -404,16 +391,15 @@ var helpers = function(options) {
   }
 
   function replaceImage(name, value, field) {
-    
-    if(!field) field = fields[name]; // ...
+    // if(!field) field = fields[name]; 
+    if(!field) return false;
 
     // do not replace empty fields
     if(!value || value == 'http://test.adrapid.com/') {
       return false;
     } 
-    // else {
-    // }
-
+    
+    // debug
 
     if(field.attr == 'img') {
       replaceImageElement(field.target, value);
@@ -574,6 +560,7 @@ var helpers = function(options) {
 
   function findImageElement(field) {
     var target;
+    var outputs = [];
     
     // try find by replace images..
     if(field.replace_images) {
@@ -588,21 +575,26 @@ var helpers = function(options) {
           var iframeItem = $('#iframe_result').contents().find(findStr);    
 
           if(imgEl.length) {
-            return imgEl;
+            // return imgEl; 
+            outputs.push(imgEl);
           } else {
           }
 
-          if(iframeItem) {
+          // force replacement test
+          // if(iframeItem) {
            
-            // test replace
-            // TODO: get correct ID of image to replace ...
-            var rimg = $('input[name=img_1]').val();
-            replaceImageElement(iframeItem, rimg);
+          //   // test replace
+          //   // TODO: get correct ID of image to replace ...
+          //   var rimg = $('input[name=img_1]').val();
+          //   replaceImageElement(iframeItem, rimg);
 
-            return iframeItem;
-          }
+          //   return iframeItem;
+          // }
 
         });
+
+        // return prepared list of images
+        // return outputs;
       } else {
       }
 
@@ -649,21 +641,25 @@ var helpers = function(options) {
     if($('#Stage_' + field.name).length) return '#Stage_' + field.name;                
 
     // look for results in iframe 
-    var iframeD = $('#iframe_result').contents();
-    var specD = iframeD.find('#' + field.name)
+    // var iframeD = $('#iframe_result').contents();
+    // var specD = iframeD.find('#' + field.name)
     
-    // rrr
-    if(specD) {
-      // .text($(this).val());
-    } else {
-    }
+    // // rrr
+    // if(specD) {
+    // } else {
+    // }
+
+    if(outputs) return outputs;
 
     return '#noImg'; // no image found
   }
 
   // remove add depdendencies
-  function flushAd(callback) {
+  function unloadLivePreview(callback) {
 
+    // remove ad object
+    $('#ad-preview').remove();
+    
     // remove scripts
     $("script[src='*preview_edge.js']").remove();
     $("script[src='http://test.adrapid.com/templates/banner/*']").remove();
@@ -671,10 +667,16 @@ var helpers = function(options) {
     $("script[src='*http://test.adrapid.com/templates/banner/amedia-3_image/980x300/980x300-preview_edge.js']").remove(); // test specific
     $.each($('head script'), function(i, s) { $(s).remove(); });
     $.each($('head object'), function(i, s) { $(s).remove(); });
-    $('#ad-preview').remove();
 
-    // ...after this, we should possibly be able 
-    //    to force-reload the actual template..!
+    // reset global vars
+    globalRules = false;
+    formFields = false;
+    bannerType = false;
+
+    // TODO: unbind event listeners
+
+    // ... banner is now removed from document
+    if(callback) callback();
   }
 
   // change format helper
@@ -722,7 +724,7 @@ var helpers = function(options) {
       break;
     }
 
-    // flushAd(); // remove current libraries for currently running ad
+    // unloadLivePreview(); // remove current libraries for currently running ad
     
     // // force-reload animation dependencies
     // setTimeout(function() {
@@ -903,7 +905,9 @@ var helpers = function(options) {
       strategy: 'inline', // inline or iframe
     }, options);
 
-    bannerType = 'html5'; // set global var
+    // get the banner type
+    // bannerType = 'html5';
+    bannerType = getHtml5BannerType()
 
     this.loadPreviewDependencies(function() {         // make sure animation dependencies is loaded before loading the banner
       adrapid.getPreviewHtml5(templateId, format)             // get the banner animation content
@@ -929,9 +933,7 @@ var helpers = function(options) {
       formats: true, // include formats dropdown
       form: '',
       before: func,
-      // complete: func,
-      complete: function() {
-      }
+      complete: func,
     }, settings);
 
     return adrapid.rules(templateId).then(function(rules) {   // get the rules for the template
