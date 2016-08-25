@@ -285,6 +285,9 @@ var helpers = function(options) {
       fields[field.name] = getSelector(field);  // find selector for field
 
       if(c == max) {
+
+        // debug form selectors object
+
         formFields = fields; // save fields object globally
         if(callback) callback(fields);
         return fields;
@@ -298,8 +301,6 @@ var helpers = function(options) {
         callback(fields);
       });
     } else {
-      var fields = {};
-
       // get rules for the template, since they are not provided to this method
       adrapid.rules(options.templateId).then(function(rules) {
         globalRules = rules; // save rules globally
@@ -422,11 +423,16 @@ var helpers = function(options) {
   function getSelector(field) {
     var name = field.name;
     var target;
+    var outputs = [];
 
     // check for internal replacement for image
     // TODO: split this into separate function ..
     if(field.type == 'image') { // && field.replace [?]
       target = findImageElement(field); // using helper
+
+      // check if we found image using the `findImageElement` function
+      if(target && target.length) {
+      }
 
       // check for other targets
       if($('#' + field.name).length) target = '#' + field.name;
@@ -434,6 +440,36 @@ var helpers = function(options) {
       // redundant check for image..
       // TODO: improve this!
       if($('#iframe_result').length) {
+
+        // find through replace ID:s...
+        // TODO: fix!!
+        // TODO: each image should only belong to one selector at max
+        if(field.replace_ids) {
+          if(field.replace_ids instanceof Array) {
+          
+            // loop through items
+            $.each(field.replace_ids, function(i, image) {
+              var iframeItem = $('#iframe_result').contents().find('#' + image);
+
+              if(iframeItem.length > 0) {
+                outputs.push(iframeItem);
+              }
+            });
+          } else {
+          }
+        }
+
+
+        // found any image selectors?
+        if(outputs.length) {
+
+          // return {
+          //   target: outputs,
+          //   attr: 'img',
+          // };
+        }
+
+
      
         // pattern : #replacement
         if(field.replace) {
@@ -444,10 +480,8 @@ var helpers = function(options) {
 
             // return with 'img' change attrib...
             return {
-              // returns an object
-              // TODO: set config for this
               target: iframeItem,
-              attr: 'img', // intead of 'background'
+              attr: 'img',
             };
 
           }
@@ -470,15 +504,14 @@ var helpers = function(options) {
       }
 
       return {
-        // returns an object
-        // TODO: set config for this
         name: name,
         target: target,
         type: 'replace', 
         attr: 'background', // either 'background' or 'img'
         // replace: replaceString,
       };
-    }
+   
+    } // end image handling
 
     // text fields / other:
 
@@ -557,43 +590,45 @@ var helpers = function(options) {
     var target;
     var outputs = [];
     
-    // try find by replace images..
-    if(field.replace_images) {
+    // // try find by replace images..
+    // if(field.replace_images) {
 
-      // TODO: should not do the actual replace
-      if(field.replace_images instanceof Array) {
-        $.each(field.replace_images, function(i, image) {
-          var findStr = 'img[src="' + image + '"]';
-          var imgEl = $(findStr);
+    //   // TODO: should not do the actual replace
+    //   if(field.replace_images instanceof Array) {
+    //     $.each(field.replace_images, function(i, image) {
+    //       var findStr = 'img[src="' + image + '"]';
+    //       var imgEl = $(findStr);
+
           
-          if(imgEl.length) {
-            // return imgEl; 
-            outputs.push(imgEl);
-          } else {
-          }
-        });
-      } else {
-      }
-    }
+    //       if(imgEl.length) {
+    //         // return imgEl; 
+    //         outputs.push(imgEl);
+    //       } else {
+    //       }
+    //     });
+    //   } else {
+    //   }
+    // }
 
 
-    if(field.replace_ids) {
+    // if(field.replace_ids) {
 
-      if(field.replace_ids instanceof Array) {
+    //   if(field.replace_ids instanceof Array) {
       
-        // loop through items
-        $.each(field.replace_ids, function(i, image) {
-          var findStr = '#' + image;
-          var imgEl = $(findStr);
+    //     // loop through items
+    //     $.each(field.replace_ids, function(i, image) {
+    //       var findStr = '#' + image;
+    //       var imgEl = $(findStr);
 
-          if(imgEl.length) {
-            return findStr;
-          } else {
-          }
-        });
-      } else {
-      }
-    }
+
+    //       if(imgEl.length) {
+    //         return findStr;
+    //       } else {
+    //       }
+    //     });
+    //   } else {
+    //   }
+    // }
 
     if(field.replace) {
       var replaceString = field.replace.substring(0, field.replace.length - 4);
@@ -648,6 +683,7 @@ var helpers = function(options) {
   // TODO: unbind previously set listeners
   function switchFormat(newFormat) {
     // $('#target').html('Loading...');
+    $('#target').hide();
 
     // reset banner state
     bannerState = false;
@@ -676,6 +712,7 @@ var helpers = function(options) {
         $('iframe').load(function() {
           getAndBindFormFields();
           bannerState = true;
+          $('#target').show();
         });
 
         // now we need to rebind fields ..
