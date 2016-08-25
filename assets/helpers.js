@@ -354,6 +354,10 @@ var helpers = function(options) {
     updateBannerContent();
   }
 
+  function isArray(a) {
+    return (!!a) && (a.constructor === Array);
+  };
+
   function flashElement(selector) {
     selector.addClass('border');
     
@@ -463,10 +467,10 @@ var helpers = function(options) {
         // found any image selectors?
         if(outputs.length) {
 
-          // return {
-          //   target: outputs,
-          //   attr: 'img',
-          // };
+          return {
+            target: outputs,
+            attr: 'img',
+          };
         }
 
 
@@ -564,9 +568,9 @@ var helpers = function(options) {
   }
 
   function replaceImageElement(selector, newImage) {
-    if(typeof selector == 'array') {
+    if(isArray(selector)) {
       $.each(selector, function(i, el) {
-        replaceImageElement(el. newImage);
+        replaceImageElement(el, newImage);
       });
     } else {
       selector.attr({
@@ -579,7 +583,7 @@ var helpers = function(options) {
   function replaceImageBackground(selector, newImage) {
     if(typeof selector == 'array') {
       $.each(selector, function(i, el) {
-        replaceImageBackground(el. newImage);
+        replaceImageBackground(el, newImage);
       });
     } else {
       selector.css('background-image', 'url("' + newImage + '")');
