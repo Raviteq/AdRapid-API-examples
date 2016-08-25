@@ -247,6 +247,12 @@ var helpers = function(options) {
         getAndBindFormFields(options); // get and bind form fields for the template
       });
 
+      // add a timeout in case we dont get the iframe load event
+      setTimeout(function() {
+        bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
+        getAndBindFormFields(options); // get and bind form fields for the template
+      }, 700);
+
     }());
 
     // add color pickers to form
@@ -354,23 +360,23 @@ var helpers = function(options) {
   // bind form events to update html5 live preview
   function bindFormFields(fields) {
 
-
     // text fields change
-    $('input[prop=text]').on('input', function() {
+    $('input[prop=text]').off().on('input', function() {
       $(fields[$(this).attr('name')]).html($(this).val());
     });
 
     // image fields change
-    $('input[prop=image]').on('input', function() {
+    $('input[prop=image]').off().on('input', function() {
       var name = $(this).attr('name');
       var value = $(this).val();
       replaceImage(name, value, fields[name]);
     });
 
     // handle formats dropdown change
-    $('select[name=formats]').change(function(event) {
+    $('select[name=formats]').off().change(function(event) {
       switchFormat($(this).find(':selected').text());
     });
+
   }
 
   function flashElement(selector) {
@@ -671,7 +677,8 @@ var helpers = function(options) {
     //    to force-reload the actual template..!
   }
 
-  // chcnage format helper
+  // change format helper
+  // TODO: unbind previously set listeners
   function switchFormat(newFormat) {
     // $('#target').html('Loading...');
 
