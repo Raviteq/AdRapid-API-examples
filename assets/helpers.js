@@ -392,25 +392,17 @@ var helpers = function(options) {
       return false;
     } 
     
-    // debug
 
+    // replace the image
+    performMultiple(changeImage(field, value), [0, 200]);
+  }
+
+  function changeImage(field, value) {
     if(field.attr == 'img') {
       replaceImageElement(field.target, value);
     } else {
       replaceImageBackground($(field.target), value);
     }
-
-    // repeat the image replacement process after a short timeout.
-    // solves an issue where the image would not be replaced on 
-    // the first attempt.
-    setTimeout(function() {
-      if(field.attr == 'img') {
-        replaceImageElement(field.target, value);
-      } else {
-        replaceImageBackground($(field.target), value);
-      }
-    }, 200);
-
   }
 
   // get type of html5 banner
