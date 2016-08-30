@@ -325,6 +325,8 @@ var helpers = function(options) {
 
   // additional exports
   this.getAndBindFormFields = getAndBindFormFields;
+  this.changeColor = changeColor;
+  this.performMultiple = performMultiple;
 
   // banner debug function
   this.debugBanner = function() {
@@ -342,6 +344,7 @@ var helpers = function(options) {
     $('input[prop=image]').off().on('input', function() {
       var name = $(this).attr('name');
       var value = $(this).val();
+      if(name.indexOf('-') > -1) name = name.split('-')[0];
       replaceImage(name, value, fields[name]);
     });
 
@@ -374,6 +377,7 @@ var helpers = function(options) {
   }
 
   function updateFields() {
+    // helpers.addColorPickers();
     $('input[prop=text], input[prop=image], input[prop=color]').trigger('input');
   }
 
@@ -384,16 +388,6 @@ var helpers = function(options) {
   }
 
   function replaceImage(name, value, field) {
-    // if(!field) field = fields[name]; 
-    if(!field) return false;
-
-    // do not replace empty fields
-    if(!value || value == 'http://test.adrapid.com/') {
-      return false;
-    } 
-    
-
-    // replace the image
     performMultiple(changeImage(field, value), [0, 200]);
   }
 
@@ -433,8 +427,7 @@ var helpers = function(options) {
       // check for other targets
       if($('#' + field.name).length) target = '#' + field.name;
 
-      // redundant check for image..
-      // TODO: improve this!
+      // check for image..
       if($('#iframe_result').length) {
 
         // find through replace ID:s...
@@ -510,6 +503,12 @@ var helpers = function(options) {
     } // end image handling
 
     // text fields / other:
+    
+    // using findTextElement helper function
+    // var elem = findTextElement(field, name);
+    // if(elem && elem != "NOTFOUND") {
+    //   return elem;
+    // }
 
     // #name
     if($('#' + field.name + ' p').length) return $('#' + field.name + ' p');
@@ -549,10 +548,29 @@ var helpers = function(options) {
   }
 
   // find text element selector for a field name - returns maximum 1 element only
-  function findTextElement(field) {
+  function findTextElement(field, name) {
     var possibilities = [
-      '#Stage__' + name + ' p font span'
+      '#' + field.name + ' p',
+      '#' + name + ' p',
+      '#' + name,
+      '#Stage__' + name + ' p font span',
+      '#Stage__' + name + ' p span',
+      '#Stage__' + name + ' p font',
+      '#Stage__' + name + ' p',
+      '#Stage__' + name,
+      '#Stage_' + name + ' p font span',
+      '#Stage_' + name + ' p span',
+      '#Stage_' + name + ' p font',
+      '#Stage_' + name + ' p',
+      '#Stage_' + name,
     ];
+
+    // loop through fields, find selector in documents
+    $.each(possibilities, function(i, selector) {
+      if($(selector).length) return selector;
+    });
+
+    return 'NOTFOUND'; // no selector found
   }
 
   function findIframeTextElement(field) {
@@ -739,6 +757,7 @@ var helpers = function(options) {
 
   // reload html5 helper
   function reloadHtml5ForFormat(template_key, format) {
+    // TODO: refactor, this function is duplicated
     adrapid.getPreviewHtml5(template_key, format) 
       .then(function(data) {
         data.templateId = template_key;               // save template ID, is needed later
