@@ -348,6 +348,11 @@ var helpers = function(options) {
       replaceImage(name, value, fields[name]);
     });
 
+    // color fields change
+    $('input[prop=color]').off().on('input', function() {
+      changeColor($(this).attr('name'), $(this).val());
+    });
+
     // handle formats dropdown change
     $('select[name=formats]').off().change(function(event) {
       switchFormat($(this).find(':selected').text());
@@ -388,6 +393,7 @@ var helpers = function(options) {
   }
 
   function replaceImage(name, value, field) {
+    if(!value) return false; // do not replace image unless we have a value
     performMultiple(changeImage(field, value), [0, 200]);
   }
 
@@ -771,6 +777,7 @@ var helpers = function(options) {
   // handle color change for live preview
   function changeColor(target, color) {
 
+
     // text
     if(target == 'color_text_field1') {
       $('#Stage div p').css('color', color);
@@ -837,8 +844,9 @@ var helpers = function(options) {
    * Add color pickers to a form
    */
   this.addColorPickers = function() {
+    $('input[prop=color]').off();
     
-    // utilize minicolor library if used on the page
+    // utilize minicolor library if available
     if (typeof $.minicolors !== 'undefined') {
       $('input[prop=color]').minicolors({
         control: 'wheel',
