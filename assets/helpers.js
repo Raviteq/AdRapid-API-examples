@@ -782,9 +782,10 @@ var helpers = function(options) {
     // text
     if(target == 'color_text_field1') {
       $('#Stage div p').css('color', color);
-
-      // iframe
       $('#iframe_result').contents().find('p, div, span').css('color', color);
+      
+      // fix for button text, dont replace that
+      $('#iframe_result').contents().find('#submitBtn p').css('color', $('input[name=color_button_text1]').val());
 
     // background
     } else if(target.indexOf('background') > -1) {
