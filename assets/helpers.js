@@ -421,6 +421,7 @@ var helpers = function(options) {
     var target;
     var outputs = [];
 
+
     // check for internal replacement for image
     // TODO: split this into separate function ..
     if(field.type == 'image') { // && field.replace [?]
@@ -796,7 +797,11 @@ var helpers = function(options) {
       // TODO: remove name dependency
       $('input[name=img_1]').val('');
       $('#Stage__02').css('background-image', '');
-    
+
+    // button text
+    } else if(target.indexOf('button_text') > -1) {
+      $('#iframe_result').contents().find('#submitBtn p').css('color', color);
+
     // button
     } else if(target.indexOf('button') > -1) {
       // TODO: need global value
@@ -804,6 +809,9 @@ var helpers = function(options) {
     
       // iframe
       $('#iframe_result').contents().find('#submitBtn').css('background-color', color);
+
+
+
 
     // cornercase: shape
     } else if(target.indexOf('_shape') > -1) {
