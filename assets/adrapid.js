@@ -32,6 +32,8 @@ var AdRapid = function(params) {
     if(!params) params = {}
     if(data && debug && typeof(log) == "function") log(data, 'POST -> ' + method);
 
+    // console.log(' > GET: ' + method);
+
     return new Promise(function(resolve, reject) {
       var ajaxOptions = {  
         type: (data) ? 'POST' : 'GET',
@@ -39,11 +41,19 @@ var AdRapid = function(params) {
         data: params,
         headers: { 'Authorization': this.api_key_public },
         success: function(response) {
+          if(data) log(data);
+          // if(data) {
+          //   console.log('Got this data... ->');
+          //   console.log(data);
+          // }
+          // console.log('-------------------------------------');
           response = jQuery.parseJSON(response);
           log(response, (data) ? 'POST -> ' + method : 'GET -> ' + method);
           resolve(response);
         },
         error: function(jqXHR, textStatus, errorThrown) {
+          console.log('ERROR!!');
+          console.log(jqXHR.responseText);
           reject(jQuery.parseJSON(jqXHR.responseText));
         }
       };
@@ -86,8 +96,8 @@ var AdRapid = function(params) {
   }
 
   // get html5 preview
-  this.getPreviewHtml5 = function(template, selector) {
-    return this.api_get('templates/' + template + '/preview');
+  this.getPreviewHtml5 = function(template, format) {
+    return this.api_get('templates/' + template + '/preview/' + format);
   }
 
   // upload media
