@@ -778,7 +778,6 @@ var helpers = function(options) {
   // handle color change for live preview
   function changeColor(target, color) {
 
-
     // text
     if(target == 'color_text_field1') {
       $('#Stage div p').css('color', color);
@@ -793,7 +792,8 @@ var helpers = function(options) {
 
       // iframe
       $('#iframe_result').contents().find('#gwd-ad').css('background-color', color);
-
+      $('#iframe_result').contents().find('.gwd-page-wrapper').css('background-color', color);
+      
       // remove previously set background image
       // TODO: remove name dependency
       $('input[name=img_1]').val('');
