@@ -785,6 +785,7 @@ var helpers = function(options) {
       
       // fix for button text, dont replace that
       $('#iframe_result').contents().find('#submitBtn p').css('color', $('input[name=color_button_text1]').val());
+      $('#iframe_result').contents().find('#page1_1 p, #page1_1 div').css('color', $('input[name=color_product_text1]').val());
 
     // background
     } else if(target.indexOf('background') > -1) {
@@ -803,6 +804,10 @@ var helpers = function(options) {
     } else if(target.indexOf('button_text') > -1) {
       $('#iframe_result').contents().find('#submitBtn p').css('color', color);
 
+    // product text
+    } else if(target.indexOf('product_text') > -1) {
+      $('#iframe_result').contents().find('#page1_1 p, #page1_1 div').css('color', color);
+
     // button
     } else if(target.indexOf('button') > -1) {
       // TODO: need global value
@@ -810,9 +815,6 @@ var helpers = function(options) {
     
       // iframe
       $('#iframe_result').contents().find('#submitBtn').css('background-color', color);
-
-
-
 
     // cornercase: shape
     } else if(target.indexOf('_shape') > -1) {
