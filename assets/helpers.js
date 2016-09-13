@@ -5,7 +5,9 @@
 
 var helpers = function(options) {
 
-  // config
+  // configuration
+  /////////////////////////////////////////////////////////////////
+
   var func = function() {};
   this.inspectors = [];
   this.uploadHelper = uploadHelper;
@@ -26,6 +28,20 @@ var helpers = function(options) {
   var currentFormat = '300x250'; // contains current format of html5 banner
   var formFields; // contains form field rules
   var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js'; // path to Edge
+  var pixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // 'http://test.adrapid.com/img/assets/pixel.png';
+
+
+  // helper functions
+  /////////////////////////////////////////////////////////////////
+
+  function getAttributes(selector) {
+    var attrs = {};
+    $.each( selector[0].attributes, function ( index, attribute ) {
+      attrs[attribute.name] = attribute.value;
+    });
+    return attrs;
+   }
+
 
   // build a form from template rules
   this.buildForm = function(rules, template, settings) {
@@ -323,14 +339,50 @@ var helpers = function(options) {
     });
   }
 
-  // additional exports
-  this.getAndBindFormFields = getAndBindFormFields;
-  this.changeColor = changeColor;
-  this.performMultiple = performMultiple;
+
+  function debugSelector(selector) {
+
+    // get attributes
+    var attributes = getAttributes(selector);
+
+    // eppend attributes
+    var out = '<div ';
+    $.each(attributes, function(index, attrib) {
+      out += index + '="' + attrib + '" ';
+    });
+
+    return out;
+  }
 
   // banner debug function
   this.debugBanner = function() {
   }
+
+  // temp
+  this.debugFields = function() {
+    var inputs = $('input');
+
+    $.each(inputs, function(i, inpt) {
+    });
+  }
+
+  function debugImages() {
+    
+    // get all images in iframe
+    // var imgs = $('img');
+    var imgs = $('#iframe_result').contents().find('img');
+
+    $.each(imgs, function(i, el) {
+      el = $(el); // ??
+    });
+  }
+
+  // additional exports
+  this.getAndBindFormFields = getAndBindFormFields;
+  this.changeColor = changeColor;
+  this.performMultiple = performMultiple;
+  this.debugSelector = debugSelector;
+  helpers.debugImages = this.debugImages;
 
   // bind form events to update html5 live preview
   function bindFormFields(fields) {
@@ -377,8 +429,8 @@ var helpers = function(options) {
   function updateBannerContent() {
     // trigger state change on all text fields in order
     // to get the correct content in the ad.
-    updateFields(); // update / replace all form fields once only
-    // performMultiple(updateFields, [0, 1000]); // perform multiple times to make sure fields are replaced
+    // updateFields(); // update / replace all form fields once only
+    performMultiple(updateFields, [0, 100, 500, 1000]); // perform multiple times to make sure fields are replaced
   }
 
   function updateFields() {
@@ -393,7 +445,7 @@ var helpers = function(options) {
   }
 
   function replaceImage(name, value, field) {
-    if(!value) return false; // do not replace image unless we have a value
+    if(!value || value.length < 3) return false; // do not replace image unless we have a value
     performMultiple(changeImage(field, value), [0, 200]);
   }
 
@@ -441,6 +493,8 @@ var helpers = function(options) {
         // TODO: fix!!
         // TODO: each image should only belong to one selector at max
         if(field.replace_ids) {
+        
+          // is array?
           if(field.replace_ids instanceof Array) {
           
             // loop through items
@@ -448,7 +502,27 @@ var helpers = function(options) {
               var iframeItem = $('#iframe_result').contents().find('#' + image);
 
               if(iframeItem.length > 0) {
-                outputs.push(iframeItem);
+
+                // debug
+                var cont = debugSelector(iframeItem);
+
+                // make sure image has src
+                // temp test: only performing this for background images
+                if(iframeItem.attr('src') && iframeItem.attr('id') == 'gwd-image_9') {
+                  
+                  // replace the selector - div with background as oposed of img
+                  // replaceImageSelector(iframeItem);
+                    
+                  // re-get element for selector
+                  // iframeItem = $('#iframe_result').contents().find('#' + image);
+
+                } else {
+                  // no src
+                }
+
+                  // add to outputs
+                  outputs.push(iframeItem);                  
+
               }
             });
           } else {
@@ -590,11 +664,46 @@ var helpers = function(options) {
         replaceImageElement(el, newImage);
       });
     } else {
-      selector.attr({
-        'src': newImage,
-        'source': newImage // gwd needs this property as well
-      });
+
+      // get type of element
+      var elType = selector.prev().prop('nodeName');
+      
+      // replace the element image
+      selector
+        .attr({
+          'src': newImage,
+          'source': newImage // gwd needs this property as well
+        })
+        .css({
+          'background-image': newImage
+        })
+      ;
     }
+  }
+
+  // replace img selector with div element for a specified selector
+  function replaceImageSelector(selector, callback) {
+    
+    // get new css of div element
+    var itemStyle = 
+      'width: ' + selector.width() + 'px;' +
+      'height: ' + selector.height() + 'px;' +
+      'background-image: url(' + selector.attr('src') + ');' +
+      'background-size: cover;' + 
+      'background-position: 50%'
+    ;
+
+    // debug selector, also get content of replacement div
+    var divHtml = debugSelector(selector);
+
+    // add css to div html
+    divHtml += ' style="' + itemStyle + '"></div>';
+
+    // replace img element with div element, delete original img element
+    selector.after(divHtml).remove();
+    
+    // callback
+    if(callback) callback();
   }
 
   function replaceImageBackground(selector, newImage) {
