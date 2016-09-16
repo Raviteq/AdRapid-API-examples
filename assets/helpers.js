@@ -265,13 +265,13 @@ var helpers = function(options) {
 
       // re-build image selectors before loading banner events
       rebuildImgSelectors().then(function(res) {
-        console.log('Rebuild banner img selectors, continue to next step..')
-        console.log(res);
+        // console.log('Rebuild banner img selectors, continue to next step..')
+        // console.log(res);
 
         // getAndBindFormFields();
 
         // perform bnaner load events when banner has finished loading
-        bannerLoadEvents()
+        bannerLoadEvents(options)
           .then(function(loadedBanner) {
             console.log('Loaded banner...')
             // do stuff then banner has finished loading..
@@ -328,15 +328,15 @@ var helpers = function(options) {
 
   function getFormFields(options, callback) {
     if(globalRules) {
-      console.log('Got global rules');
+      // console.log('Got global rules');
       getTemplateSelectors(globalRules, function(fields) {
         callback(fields);
       });
     } else {
-      console.log('Need to get global rules');
+      // console.log('Need to get global rules');
       // get rules for the template, since they are not provided to this method
       adrapid.rules(options.templateId).then(function(rules) {
-        globalRules = rules; // save rules globally
+        globalRules = rules; // save rules to global rules object
       
         // update form selectors  
         getTemplateSelectors(rules, function(fields) {
@@ -352,17 +352,17 @@ var helpers = function(options) {
     if(!options) options = {templateId: template_key} // handle empty options
 
     // reset current fields
-    if(globalRules) {
-      globalRules = false;
-      console.log('Reset existing rules...');
-    }
+    // if(globalRules) {
+    //   globalRules = false;
+    //   console.log('Reset existing rules...');
+    // }
 
-    console.log('Getting new rules...');
+    // console.log('Getting new rules...');
 
     // get fields
     getFormFields(options, function(fields) {
-      console.log('Debug fields:');
-      console.log(fields);
+      // console.log('Debug fields:');
+      // console.log(fields);
 
       // bind fields
       bindFormFields(fields);
@@ -431,7 +431,13 @@ var helpers = function(options) {
 
   // debug current form selectors
   this.debugFormSelectors = function() {
-    console.log('I will debug the selectors...');
+    console.log('Debug form selectors:');
+    console.log(globalRules);
+  }
+
+  this.debugGlobalOptions = function() {
+    console.log('Global options:');
+    console.log(this.template_key);
   }
 
   // additional exports
@@ -510,8 +516,8 @@ var helpers = function(options) {
   function changeImage(field, value) {
 
     // debug
-    console.log('Replace image (' + field.attr + ') - ' + value);
-    console.log(field);
+    // console.log('Replace image (' + field.attr + ') - ' + value);
+    // console.log(field);
 
     // different handling for img and background replacement
     if(field.attr == 'img') {
@@ -750,7 +756,7 @@ var helpers = function(options) {
       // get type of element
       var elType = selector.prev().prop('nodeName');
       
-      console.log(' change elem: ' + selector.attr('id') + ' (' + elType + ')');
+      // console.log(' change elem: ' + selector.attr('id') + ' (' + elType + ')');
 
       // handling for different types of img elements
       switch(elType) {
@@ -974,31 +980,25 @@ var helpers = function(options) {
 
   // events to be performed when banner have finished loaded
   // and has been added to the current document
-  function bannerLoadEvents() {
+  function bannerLoadEvents(options) {
+
+    // set default options if not set
+    if(!options) options = {'template_key': helpers.template_key};
+    if(!options.templateId) options.templateId = helpers.template_key;
 
     return new Promise(function(resolve, reject) {
 
-      $('iframe').load(function() {
-        console.log('Banner was loaded!');
-      });    
-
       // wait for iframe to finish loading
       $('iframe').load(function() {
-        bannerState = true;
-        bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
-        getAndBindFormFields(options); // get and bind form fields for the template
+        updateBanner();
         resolve('yes');
       });
 
       // TODO: handle with status flag var so that we can avoid doing this multiple times
       // add a timeout in case we dont get the iframe load event
       setTimeout(function() {
-        // if(!bannerState) {
-          bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
-          getAndBindFormFields(options); // get and bind form fields for the template
-          bannerState = true;
-          resolve('yes');
-        // }
+        updateBanner();
+        resolve('yes');
       }, 700);
 
     });
@@ -1007,6 +1007,7 @@ var helpers = function(options) {
 
   function updateBanner() {
     // if(!bannerState) {
+      $('#target').show(); // make sure live preview banner is visible
       bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
       getAndBindFormFields(globalOptions); // get and bind form fields for the template
       bannerState = true;
@@ -1016,7 +1017,6 @@ var helpers = function(options) {
   // change format helper
   // TODO: unbind previously set listeners
   function switchFormat(newFormat) {
-    // $('#target').html('Loading...');
     $('#target').hide();
 
     // reset banner state
@@ -1066,6 +1066,9 @@ var helpers = function(options) {
 
   // reload html5 helper
   function reloadHtml5ForFormat(template_key, format) {
+    console.log('Reload html5 preview');
+    console.log(template_key);
+
     // TODO: refactor, this function is duplicated
     adrapid.getPreviewHtml5(template_key, format) 
       .then(function(data) {
