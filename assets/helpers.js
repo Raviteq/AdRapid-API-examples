@@ -25,6 +25,7 @@ var helpers = function(options) {
   var bannerState = false;
   var bannerType = ''; //  temp global var
   var globalRules = false; // global rules var
+  var globalOptions = false; // global options var
   var currentFormat = '300x250'; // contains current format of html5 banner
   var formFields; // contains form field rules
   var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js'; // path to Edge
@@ -262,22 +263,36 @@ var helpers = function(options) {
     // initialize function - is only run once 
     (function init() {
 
-      // wait for iframe to finish loading
-      $('iframe').load(function() {
-        bannerState = true;
-        bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
-        getAndBindFormFields(options); // get and bind form fields for the template
+      // re-build image selectors before loading banner events
+      rebuildImgSelectors().then(function(res) {
+        console.log('Rebuild banner img selectors, continue to next step..')
+        console.log(res);
+
+        // getAndBindFormFields();
+
+        // perform bnaner load events when banner has finished loading
+        bannerLoadEvents()
+          .then(function(loadedBanner) {
+            console.log('Loaded banner...')
+            // do stuff then banner has finished loading..
+            return res; 
+          })
+        ;
+
+        // replace the elem
+        // return when complete
       });
 
+      // perform bnaner load events when banner has finished loading
+      // bannerLoadEvents();
+
+      // save global options
+      globalOptions = options;
+      
       // TODO: handle with status flag var so that we can avoid doing this multiple times
       // add a timeout in case we dont get the iframe load event
-      setTimeout(function() {
-        if(!bannerState) {
-          bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
-          getAndBindFormFields(options); // get and bind form fields for the template
-          bannerState = true;
-        }
-      }, 700);
+      setTimeout(updateBanner, 700);
+      setTimeout(updateBanner, 1500);
 
     }());
 
@@ -313,10 +328,12 @@ var helpers = function(options) {
 
   function getFormFields(options, callback) {
     if(globalRules) {
+      console.log('Got global rules');
       getTemplateSelectors(globalRules, function(fields) {
         callback(fields);
       });
     } else {
+      console.log('Need to get global rules');
       // get rules for the template, since they are not provided to this method
       adrapid.rules(options.templateId).then(function(rules) {
         globalRules = rules; // save rules globally
@@ -333,8 +350,21 @@ var helpers = function(options) {
   // TODO: promisify!
   function getAndBindFormFields(options) {
     if(!options) options = {templateId: template_key} // handle empty options
-    
+
+    // reset current fields
+    if(globalRules) {
+      globalRules = false;
+      console.log('Reset existing rules...');
+    }
+
+    console.log('Getting new rules...');
+
+    // get fields
     getFormFields(options, function(fields) {
+      console.log('Debug fields:');
+      console.log(fields);
+
+      // bind fields
       bindFormFields(fields);
     });
   }
@@ -345,10 +375,32 @@ var helpers = function(options) {
     // get attributes
     var attributes = getAttributes(selector);
 
+    // set of attributes to ignore
+    var ignore = [
+      'is', 
+      'src',
+      'source',
+      'style',
+    ];
+
+    // debug attributes
+    // console.log('Got these attributes:');
+    // console.log(attributes);
+
     // eppend attributes
     var out = '<div ';
     $.each(attributes, function(index, attrib) {
-      out += index + '="' + attrib + '" ';
+      // console.log(' :: ' + index + ' -> ' + attrib);
+    
+      // skip some attributes
+      // console.log(index + ' -> ' + ($.inArray(index, ignore) !== -1));
+      if(($.inArray(index.toLowerCase(), ignore) !== -1)) {
+        // console.log(' skipping: ' + index);
+      } else {
+        // console.log(' adding: ' + index);
+        out += index + '="' + attrib + '" ';
+      }
+
     });
 
     return out;
@@ -375,6 +427,11 @@ var helpers = function(options) {
     $.each(imgs, function(i, el) {
       el = $(el); // ??
     });
+  }
+
+  // debug current form selectors
+  this.debugFormSelectors = function() {
+    console.log('I will debug the selectors...');
   }
 
   // additional exports
@@ -434,7 +491,6 @@ var helpers = function(options) {
   }
 
   function updateFields() {
-    // helpers.addColorPickers();
     $('input[prop=text], input[prop=image], input[prop=color]').trigger('input');
   }
 
@@ -444,12 +500,20 @@ var helpers = function(options) {
     });
   }
 
+  // replace image wrapper function
+  // TODO: needs updated selector...
   function replaceImage(name, value, field) {
     if(!value || value.length < 3) return false; // do not replace image unless we have a value
     performMultiple(changeImage(field, value), [0, 200]);
   }
 
   function changeImage(field, value) {
+
+    // debug
+    console.log('Replace image (' + field.attr + ') - ' + value);
+    console.log(field);
+
+    // different handling for img and background replacement
     if(field.attr == 'img') {
       replaceImageElement(field.target, value);
     } else {
@@ -473,7 +537,6 @@ var helpers = function(options) {
     var target;
     var outputs = [];
 
-
     // check for internal replacement for image
     // TODO: split this into separate function ..
     if(field.type == 'image') { // && field.replace [?]
@@ -496,7 +559,7 @@ var helpers = function(options) {
         
           // is array?
           if(field.replace_ids instanceof Array) {
-          
+            
             // loop through items
             $.each(field.replace_ids, function(i, image) {
               var iframeItem = $('#iframe_result').contents().find('#' + image);
@@ -508,38 +571,47 @@ var helpers = function(options) {
 
                 // make sure image has src
                 // temp test: only performing this for background images
-                if(iframeItem.attr('src') && iframeItem.attr('id') == 'gwd-image_9') {
+                if(iframeItem.attr('src') && iframeItem.attr('id') == 'gwd-image_9' && iframeItem.prev().prop('nodeName') !== 'DIV') {
                   
-                  // replace the selector - div with background as oposed of img
+                  console.log('Replacing image form backgrund!');
+
+                  // // replace the selector - div with background as oposed of img
                   // replaceImageSelector(iframeItem);
                     
-                  // re-get element for selector
+                  // // // re-get element for selector
                   // iframeItem = $('#iframe_result').contents().find('#' + image);
-
-                } else {
-                  // no src
-                }
 
                   // add to outputs
                   outputs.push(iframeItem);                  
 
-              }
-            });
-          } else {
-          }
-        }
+                } else {
+                  // no src
+                  // add to outputs
+                  outputs.push(iframeItem);
+                }
 
+
+              }
+
+            });
+          } else { 
+             // replace ids:s is single item
+          }
+        } else {
+          // no replace id:s for item
+        }
 
         // found any image selectors?
         if(outputs.length) {
+
+          // console.log('We have these outputs:');
+          // console.log(outputs);
 
           return {
             target: outputs,
             attr: 'img',
           };
         }
-
-
      
         // pattern : #replacement
         if(field.replace) {
@@ -572,6 +644,16 @@ var helpers = function(options) {
         }
         
       }
+
+
+      // console.log('We return object ... ');
+      // console.log({
+      //   name: name,
+      //   target: target,
+      //   type: 'replace', 
+      //   attr: 'background', // either 'background' or 'img'
+      //   // replace: replaceString,
+      // });
 
       return {
         name: name,
@@ -668,18 +750,90 @@ var helpers = function(options) {
       // get type of element
       var elType = selector.prev().prop('nodeName');
       
-      // replace the element image
-      selector
-        .attr({
-          'src': newImage,
-          'source': newImage // gwd needs this property as well
-        })
-        .css({
-          'background-image': newImage
-        })
-      ;
+      console.log(' change elem: ' + selector.attr('id') + ' (' + elType + ')');
+
+      // handling for different types of img elements
+      switch(elType) {
+        default:
+        case 'IMG':
+          // console.log(' > handle: IMG');
+          
+          // replace the element image
+          selector
+            .attr({
+              'src': newImage,
+              'source': newImage // gwd needs this property as well
+            })
+          ;
+          
+        break;
+
+        case 'DIV':
+          // console.log(' > handle: DIV');
+
+          // debug element html
+          // console.log('>' + newImage + '<' + ' ...');
+          // console.log(selector.get());
+         
+          selector
+            .css({
+              'background-image': 'url(' + newImage + ')',
+            })
+          ;
+        break;
+      }
+
+
     }
   }
+
+  // replace element helpers
+  // this is a temp fix
+  function rebuildImgSelectors() {
+   
+    // return promise
+    return new Promise(function(resolve, reject) {
+      // get the background image, replace the element
+      // bind form selectors at this point
+      // TODO: should be own function
+      // TODO: should of course be dynamic, this is for demo purposes
+
+      // wait 
+      // setTimeout(function() {
+        
+      //   var imgElem = $('#iframe_result').contents().find('#gwd-image_9');
+      //   console.log('Change this elem:');
+      //   console.log(imgElem);
+  
+      //   // replace the elem
+      //   replaceImageSelector(imgElem, function(res) {
+
+      //     // log new elem
+      //     var imgElem = $('#iframe_result').contents().find('#gwd-image_9');
+      //     console.log('New elem:');
+      //     console.log(imgElem);
+
+      //     // some wait
+      //     setTimeout(function() {
+
+      //       // reset fields - not neccessary if we bind 
+      //       // events in the next step at first ... 
+      //       getAndBindFormFields();
+      //     }, 1000);
+          
+      //     // return when complete
+      //     resolve('was completed');
+
+      //   });
+
+      // }, 3000);
+
+      // return instead
+      resolve('complete');
+
+    });
+
+  } 
 
   // replace img selector with div element for a specified selector
   function replaceImageSelector(selector, callback) {
@@ -698,6 +852,9 @@ var helpers = function(options) {
 
     // add css to div html
     divHtml += ' style="' + itemStyle + '"></div>';
+
+    // console.log('We have this new html:');
+    // console.log(divHtml);
 
     // replace img element with div element, delete original img element
     selector.after(divHtml).remove();
@@ -809,6 +966,53 @@ var helpers = function(options) {
     if(callback) callback();
   }
 
+  function resetBannerState() {
+    bannerState = false;
+    globalRules = false;
+    return true;
+  }
+
+  // events to be performed when banner have finished loaded
+  // and has been added to the current document
+  function bannerLoadEvents() {
+
+    return new Promise(function(resolve, reject) {
+
+      $('iframe').load(function() {
+        console.log('Banner was loaded!');
+      });    
+
+      // wait for iframe to finish loading
+      $('iframe').load(function() {
+        bannerState = true;
+        bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
+        getAndBindFormFields(options); // get and bind form fields for the template
+        resolve('yes');
+      });
+
+      // TODO: handle with status flag var so that we can avoid doing this multiple times
+      // add a timeout in case we dont get the iframe load event
+      setTimeout(function() {
+        // if(!bannerState) {
+          bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
+          getAndBindFormFields(options); // get and bind form fields for the template
+          bannerState = true;
+          resolve('yes');
+        // }
+      }, 700);
+
+    });
+
+  }
+
+  function updateBanner() {
+    // if(!bannerState) {
+      bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
+      getAndBindFormFields(globalOptions); // get and bind form fields for the template
+      bannerState = true;
+    // }
+  }
+
   // change format helper
   // TODO: unbind previously set listeners
   function switchFormat(newFormat) {
@@ -816,7 +1020,7 @@ var helpers = function(options) {
     $('#target').hide();
 
     // reset banner state
-    bannerState = false;
+    resetBannerState();
 
     switch(bannerType) {
       default:
@@ -839,19 +1043,8 @@ var helpers = function(options) {
         ;
 
         // wait for iframe load event
-        $('iframe').load(function() {
-          getAndBindFormFields();
-          bannerState = true;
-          $('#target').show();
-        });
+        bannerLoadEvents();
 
-        // now we need to rebind fields ..
-        setTimeout(function() {
-          if(!bannerState) {
-            getAndBindFormFields();
-            bannerState = true;
-          }
-        }, 800);
       break;
 
       case 'edge':
