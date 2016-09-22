@@ -8,6 +8,7 @@
     "grunt-contrib-jade": "*",
     "grunt-contrib-stylus": "*",
     "grunt-contrib-watch": "*",
+    "grunt-newer": "^1.2.0",
     "jit-grunt": "*"
   }
 }

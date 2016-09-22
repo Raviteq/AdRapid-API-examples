@@ -37,7 +37,7 @@ module.exports = function(grunt) {
 
             jade: {
                 files: "dev/jade/**/*.jade",
-                tasks: ['jade'],
+                tasks: ['newer:jade:compile']
             },
 
             stylus: {
