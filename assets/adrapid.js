@@ -90,6 +90,11 @@ var AdRapid = function(params) {
     return this.api_get('orders/' + orderID);
   }
 
+  // get order data
+  this.getOrderData = function(orderID) {
+    return this.api_get('orders/' + orderID + '/data');
+  }
+
   // get item preview
   this.getPreview = function(itemID) {
     return this.api_get('get_item_content/' + itemID);
