@@ -95,6 +95,11 @@ var AdRapid = function(params) {
     return this.api_get('orders/' + orderID + '/data');
   }
 
+  // get available formats
+  this.formats = function() {
+    return this.api_get('formats');
+  }
+
   // get item preview
   this.getPreview = function(itemID) {
     return this.api_get('get_item_content/' + itemID);
