@@ -244,11 +244,7 @@ var helpers = function(options) {
   // setup editor for html5 live preview
   // - depends html5 preview (loaded), as well as a an order form.
   this.previewHelper = function(options) {
-    
-    // debug
-    // if(options) {
-    // }
-    
+       
     // empty field obj, will be populated with fieldName:elementSelector pairs
     // is also mapped to global formFields object
     var fields = {};
@@ -265,9 +261,6 @@ var helpers = function(options) {
 
       // re-build image selectors before loading banner events
       rebuildImgSelectors().then(function(res) {
-        // console.log('Rebuild banner img selectors, continue to next step..')
-        // console.log(res);
-
         // getAndBindFormFields();
 
         // perform bnaner load events when banner has finished loading
@@ -351,24 +344,10 @@ var helpers = function(options) {
   function getAndBindFormFields(options) {
     if(!options) options = {templateId: template_key} // handle empty options
 
-    // reset current fields
-    // if(globalRules) {
-    //   globalRules = false;
-    //   console.log('Reset existing rules...');
-    // }
-
-    // console.log('Getting new rules...');
-
-    // get fields
-    getFormFields(options, function(fields) {
-      // console.log('Debug fields:');
-      // console.log(fields);
-
-      // bind fields
-      bindFormFields(fields);
+    getFormFields(options, function(fields) { // get fields
+      bindFormFields(fields); // bind fields
     });
   }
-
 
   function debugSelector(selector) {
 
@@ -383,21 +362,12 @@ var helpers = function(options) {
       'style',
     ];
 
-    // debug attributes
-    // console.log('Got these attributes:');
-    // console.log(attributes);
-
     // eppend attributes
     var out = '<div ';
     $.each(attributes, function(index, attrib) {
-      // console.log(' :: ' + index + ' -> ' + attrib);
     
       // skip some attributes
-      // console.log(index + ' -> ' + ($.inArray(index, ignore) !== -1));
-      if(($.inArray(index.toLowerCase(), ignore) !== -1)) {
-        // console.log(' skipping: ' + index);
-      } else {
-        // console.log(' adding: ' + index);
+      if(($.inArray(index.toLowerCase(), ignore) === -1)) {
         out += index + '="' + attrib + '" ';
       }
 
@@ -406,15 +376,11 @@ var helpers = function(options) {
     return out;
   }
 
-  // banner debug function
-  this.debugBanner = function() {
-  }
-
-  // temp
   this.debugFields = function() {
     var inputs = $('input');
 
     $.each(inputs, function(i, inpt) {
+      console.log(inpt);
     });
   }
 
@@ -596,7 +562,6 @@ var helpers = function(options) {
                   outputs.push(iframeItem);
                 }
 
-
               }
 
             });
@@ -609,10 +574,6 @@ var helpers = function(options) {
 
         // found any image selectors?
         if(outputs.length) {
-
-          // console.log('We have these outputs:');
-          // console.log(outputs);
-
           return {
             target: outputs,
             attr: 'img',
@@ -859,9 +820,6 @@ var helpers = function(options) {
     // add css to div html
     divHtml += ' style="' + itemStyle + '"></div>';
 
-    // console.log('We have this new html:');
-    // console.log(divHtml);
-
     // replace img element with div element, delete original img element
     selector.after(divHtml).remove();
     
@@ -966,9 +924,6 @@ var helpers = function(options) {
     formFields = false;
     bannerType = false;
 
-    // TODO: unbind event listeners
-
-    // ... banner is now removed from document
     if(callback) callback();
   }
 
@@ -991,14 +946,14 @@ var helpers = function(options) {
       // wait for iframe to finish loading
       $('iframe').load(function() {
         updateBanner();
-        resolve('yes');
+        resolve('loaded on iframe load event');
       });
 
       // TODO: handle with status flag var so that we can avoid doing this multiple times
       // add a timeout in case we dont get the iframe load event
       setTimeout(function() {
         updateBanner();
-        resolve('yes');
+        resolve('loaded after timeout');
       }, 700);
 
     });
@@ -1066,9 +1021,7 @@ var helpers = function(options) {
 
   // reload html5 helper
   function reloadHtml5ForFormat(template_key, format) {
-    console.log('Reload html5 preview');
-    console.log(template_key);
-
+   
     // TODO: refactor, this function is duplicated
     adrapid.getPreviewHtml5(template_key, format) 
       .then(function(data) {
