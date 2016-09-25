@@ -5,16 +5,16 @@ extends ../template.jade
 block title
 	title Simple implementation
 
-
 block description
-	h3 Simple example
+	h1 Simple example
 	p This is a simple implementation of the AdRapid API. This example illustrates the process of getting a list of available templates, getting rules for a specific template, sending an order, as well as wating for and displaying the resulting ads.
-	p The log shows the data that is sent to and returned from the API.
+	
+	h2 Select a template
 	p Start by selecting one of the available templates below.
-
 
 block form_content
 	form#the_form
+		#form_description
 		+bar
 		#form-content.row.box
 		+bar
@@ -27,11 +27,13 @@ block app_content
 
 block scripts
 	script(type="text/javascript", src="../assets/lib/inspector-json.js")
+	script(type="text/javascript", src="../assets/lib/jquery.minicolors.min.js")
 	script(type="text/javascript", src="app.js")
 
 
 block head
 	link(rel="stylesheet", type="text/css", href="../assets/lib/inspector-json.css")
+	link(rel="stylesheet", type="text/css", href="../assets/lib/jquery.minicolors.css")
 
 
 mixin bar
