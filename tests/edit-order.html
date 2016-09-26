@@ -14,18 +14,8 @@
         <div id="description">
           <h1>Edit order example</h1>
           <p>This is a sample implementation for edit order handling</p>
-          <button id="getOrder">Get order!</button>
-          <p>Tests</p>
-          <table id="orders-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Order id</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+          <button id="getOrder">Get order</button>
+          <button id="newOrder">New order</button>
         </div>
       </div>
       <div id="form">
@@ -43,6 +33,16 @@
           <h3>Preview</h3>
         </div>
       </div>
+      <table id="orders-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Order id</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
     <div id="spinner" class="loader">
       <div class="throbber throbber_large"></div>
@@ -57,26 +57,27 @@
       // config
       var projects = []; // list of template
       var api_key = '6271f323ff24875b74569ebc76eafa7c8ce0aa85';
+      var templateId = '22bc0b7770842cc6310b25fec2346b8252f31ecf';
       var adrapid = new AdRapid(api_key);
       var globalorderID = 17922;
       var globalOrderData = {}; // our orders "db"
       
       // dummy order data
       var orderData = {
-        100: {
+        1: {
+          orderID: 10400,
+          userID: 123,
+          templateID: templateId,
+        },
+        2: {
           orderID: 10500,
           userID: 123,
-          templateID: '22bc0b7770842cc6310b25fec2346b8252f31ecf',
+          templateID: templateId,
         },
-        101: {
-          orderID: 10500,
-          userID: 123,
-          templateID: '22bc0b7770842cc6310b25fec2346b8252f31ecf',
-        },
-        101: {
+        3: {
           orderID: 10600,
-          userID: 124,
-          templateID: '22bc0b7770842cc6310b25fec2346b8252f31ecf',
+          userID: 123,
+          templateID: templateId,
         },
       };
       
@@ -86,14 +87,8 @@
       
       // main initialize functio
       function init() {
-        adrapid.templates()
-          .then(doStuff)
-          //- .then(filter_templates)
-          .then(setup_templates)
-        ;
-      
+        adrapid.templates().then(setup_templates);
         populateData();
-      
         populateTable();
       }
       
@@ -115,18 +110,11 @@
       function populateTable() {
         var output = '';
       
-        // get data
         $.each(globalOrderData, function(i, row) {
           output += '<tr><td>' + row.orderID + '</td><td>' + i + '</td><td><a href="#" class="button edit_order small" data-orderID="' + i + '">Edit</a></td></tr>';
         });
       
         $('tbody').html(output);
-      }
-      
-      
-      function doStuff(templates) {
-        // setup prev orders table 
-        // ... 
       }
       
       function saveEditOrderCallback(order) {
@@ -137,26 +125,34 @@
         // ... 
       }
       
-      
       function editOrder(orderID) {
         var orderData = globalOrderData[orderID];
       
-        //- console.log('Edit order:');
-        //- console.log(orderData);
+        console.log('Edit order:');
+        console.log(orderData);
       
-        // load the form, then pop the events
+        // load the form using the default content
         loadForm(orderData.templateID, function() {
       
-          setTimeout(function() {
-      
-            adrapid.getOrderData(orderData.orderID).then(function(orderData) {
-              $.each(orderData, function(key, val) {
-                $('input[name=' + key + ']').val(val);
-              });
-      
+          // get the data for the item
+          adrapid.getOrderData(orderData.orderID).then(function(orderData) {
+            
+            $.each(orderData, function(key, val) {
+              $('input[name=' + key + ']').val(val);
             });
-          
-          }, 1234);
+      
+            // re-bind save order event
+            setTimeout(function() {
+              $('#render').on('click', function(e) {
+                e.preventDefault();
+                console.log('We do render');
+                $('#orders-table').show();
+                sendOrder(orderData.templateID);
+              });
+            }, 2500);
+      
+          });
+        
           
         });
       
@@ -166,6 +162,8 @@
         console.log(' Will do new order .. ');
       
         // show templates 
+        $('.template').show();
+        $('#orders-table').hide();
       }
       
       
@@ -193,10 +191,12 @@
       
       function setup_templates(templates) {
         console.log('Setting up templates..');
+        console.log(templates);
+        console.log('--------------------------------------');
       
         $.each(templates, function(i, data) {
           projects[data.identifier] = data.templateId; // add project API key to array of available projects
-          $('#templates').append('<div class="template" name="' + data.identifier + '"><img src="' + data.thumbnail + '" style="width: 100%; " title="' + data.name + '" /></div>'); // append template to UI
+          $('#templates').append('<div class="template hide" name="' + data.identifier + '"><img src="' + data.thumbnail + '" style="width: 100%; " title="' + data.name + '" /></div>'); // append template to UI
         });
       
         bind_buttons();
@@ -216,12 +216,13 @@
           $('#target').html('<h3>Loading..</h3>');
           template_key = projects[$(this).attr('name')];
           getLivePreview(template_key);
+          //- loadForm(template_key);
         });
         
         // when the form is submitted, handle sending the order to AdRapid
         $('.send').click(function(event) {
           event.preventDefault();
-          sendOrder();
+          sendOrder().then(createOrder);
         });
       
         // handle back button
@@ -232,11 +233,38 @@
       
       }
       
-      function sendOrder() {
+      function sendOrder(templateId) {
+        //- if(!templateId) templateId = projects[$('.active').attr('name')];
+        templateId = '22bc0b7770842cc6310b25fec2346b8252f31ecf';
+      
         var order             = $('form#the_form').serializeObject();
-            order.templateId  = projects[$('.active').attr('name')], // from our api-keys config
+            order.templateId  = templateId,
+      
+        console.log('Debug orders object:');
+        console.log(order);
         
+        // TODO: needs to return orderID
         adrapid.sendOrder(order).then(helpers.watchOrder);
+      }
+      
+      function createOrder(order, templateId) {
+        console.log('Create order object:');
+        console.log(order);
+      
+        sendOrder(templateId)
+          .then(function(order) {
+      
+          });
+        ;
+      
+        // save the orders object in localStorage
+        globalOrderData[500] = {
+          orderID: 11500,
+          userID: 123,
+          templateID: templateId, // '22bc0b7770842cc6310b25fec2346b8252f31ecf',
+        };
+      
+        localStorage.setItem('orders', JSON.stringify(globalOrderData));
       }
       
       // load form helper
@@ -246,9 +274,9 @@
         adrapid.rules(template).then(function(rules) {
           helpers.buildForm(rules, template, {
             selector: '#form-content',
-            before: function() {
-              $('#the_form button, .form_placeholder').toggle();
-            },
+            //- before: function() {
+            //-   $('#the_form button, .form_placeholder').toggle();
+            //- },
             complete: function(data) {
               helpers.addUploadHelpers();
               helpers.addColorPickers();
@@ -280,11 +308,14 @@
       function getLivePreview(template_key) {
       
         helpers.template_key = template_key;      // store template key in helpers object.. secret fix
-        helpers.getForm(template_key);            // get the form for the template
+        //- helpers.getForm(template_key);            // get the form for the template
         helpers.getLivePreview(template_key);     // get the live preview, bind form events
       
-        // add a 'render button'
-        $('form').append('<button id="render" class="button blue">Render!</button>');
+        setTimeout(function(){
+          console.log('Grab button ...');
+          // add a 'render' button to the form
+          $('#form').prepend('<button id="render" class="button blue">Render!</button>');
+        }, 2000)
       }
       
       
