@@ -39,6 +39,7 @@
             <th>ID</th>
             <th>Order id</th>
             <th>Edit</th>
+            <th>Remove</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -138,9 +139,14 @@
       $('#newOrder').on('click', newOrder);
       
       // edit orders
-      $('tbody a').on( "click", function() {
+      $('tbody .edit_order').on( "click", function() {
         editOrder($(this).attr('data-orderID'));
-        console.log($(this).text() + ' -> ' + $(this).attr('data-orderID'));
+      });
+      
+      // remove orders
+      $('.remove_order').on('click', function(event) {
+        event.preventDefault();
+        removeOrder($(this).attr('data-orderID'));
       });
       
       $('#the_form button, #form').hide();
@@ -227,7 +233,7 @@
         };
       
         // update the db/localStorage
-        localStorage.setItem('orders', JSON.stringify(globalOrderData));
+        updateDb();
       
         // add row to the orders table
         addTableRow(newId, globalOrderData[newId]);
@@ -261,7 +267,7 @@
                   
                   // update the orders table for this order
                   globalOrderData[orderID].orderID = orderData.order_id; // set the new orderID
-                  localStorage.setItem('orders', JSON.stringify(globalOrderData));
+                  updateDb();
       
                   return orderData;
                 })
@@ -273,6 +279,20 @@
           
         });
       
+      }
+      
+      function removeOrder(orderID) {
+        
+        // delete from localStorage
+        delete globalOrderData[orderID];
+        updateDb();
+      
+        // delete from table
+        $('tr#order-' + orderID).remove();
+      }
+      
+      function updateDb() {
+        localStorage.setItem('orders', JSON.stringify(globalOrderData));
       }
       
       // load form helper
@@ -317,7 +337,12 @@
       }
       
       function addTableRow(i, row) {
-        var output = '<tr><td>' + row.orderID + '</td><td>' + i + '</td><td><a href="#" class="button edit_order small" data-orderID="' + i + '">Edit</a></td></tr>';
+        var output = '<tr id="order-' + i + '">' +
+          '<td>' + row.orderID + '</td>' + 
+          '<td>' + i + '</td>' +
+          '<td><a href="#" class="button edit_order small" data-orderID="' + i + '">Edit</a></td>' +
+          '<td><a href="#" class="button remove_order small" data-orderID="' + i + '">Remove</a></td>' +
+        '</tr>';
         $('tbody').append(output);
       }
     </script>
