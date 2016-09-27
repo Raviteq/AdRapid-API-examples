@@ -40,6 +40,7 @@
             <th>Order id</th>
             <th>Edit</th>
             <th>Remove</th>
+            <th>Download</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -341,6 +342,8 @@
           '<td>' + i + '</td>' +
           '<td><a href="#" class="button edit_order small" data-orderID="' + i + '">Edit</a></td>' +
           '<td><a href="#" class="button remove_order small" data-orderID="' + i + '">Remove</a></td>' +
+          '<td><a href="http://test.adrapid.com/downloads/zip/' + row.orderID + '" class="button download_order small" data-orderID="' + i + '">Download</a></td>' +
+      
         '</tr>';
         $('tbody').append(output);
       }

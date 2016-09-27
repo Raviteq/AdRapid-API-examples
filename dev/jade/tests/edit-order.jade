@@ -18,6 +18,7 @@ block app_content
         th Order id
         th Edit
         th Remove
+        th Download
     tbody
 
 
@@ -330,6 +331,8 @@ block scripts
         '<td>' + i + '</td>' +
         '<td><a href="#" class="button edit_order small" data-orderID="' + i + '">Edit</a></td>' +
         '<td><a href="#" class="button remove_order small" data-orderID="' + i + '">Remove</a></td>' +
+        '<td><a href="http://test.adrapid.com/downloads/zip/' + row.orderID + '" class="button download_order small" data-orderID="' + i + '">Download</a></td>' +
+
       '</tr>';
       $('tbody').append(output);
     }
