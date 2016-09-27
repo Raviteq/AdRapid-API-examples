@@ -210,7 +210,7 @@ block scripts
       helpers.watchOrder(order);
       
       // add the order to our orders object/"db"
-      var newId = globalOrderData.length + 1;
+      var newId = Object.keys(globalOrderData).length + 1;
       globalOrderData[newId] = {
         orderID: order.order_id,
         userID: 123,
