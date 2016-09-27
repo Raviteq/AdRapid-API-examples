@@ -59,9 +59,10 @@
       var projects = []; // list of template
       var api_key = '6271f323ff24875b74569ebc76eafa7c8ce0aa85';
       var templateId = '22bc0b7770842cc6310b25fec2346b8252f31ecf';
-      var adrapid = new AdRapid(api_key);
+      var currentTemplateId = templateId;
       var globalorderID = 17922;
       var globalOrderData = {}; // our orders "db"
+      var adrapid = new AdRapid(api_key); // initialize AdRapid with our API key
       
       // dummy order data
       var orderData = {
@@ -118,10 +119,7 @@
       }
       
       function newOrder() {
-        console.log(' Will do new order .. ');
-      
-        // show templates 
-        $('.template').show();
+        $('.template').show(); // show templates 
         //- $('#orders-table').hide();
       }
       
@@ -177,13 +175,9 @@
           $('#form, #templates').toggle();
           $('#target').html('<h3>Loading..</h3>');
           template_key = projects[$(this).attr('name')];
-          loadForm(template_key, function() {
-            console.log('Form was loaded...');
-      
-          });
+          currentTemplateId = template_key;
+          loadForm(template_key);
           //- getLivePreview(template_key);
-          console.log($(this).attr('name'));
-          console.log('Load form for key: ' + template_key);
         });
         
         // when the form is submitted, handle sending the order to AdRapid
@@ -203,8 +197,9 @@
       // send order to AdRapid
       // TODO: maintain correct templateId;
       function sendOrder(templateId) {
+        if(!templateId) templateId = currentTemplateId;
         //- if(!templateId) templateId = projects[$('.active').attr('name')];
-        templateId = '22bc0b7770842cc6310b25fec2346b8252f31ecf';
+        //- if(!templateId) templateId = '22bc0b7770842cc6310b25fec2346b8252f31ecf';
       
         var order             = $('form#the_form').serializeObject();
             order.templateId  = templateId;
@@ -242,11 +237,12 @@
       // edit order
       function editOrder(orderID) {
         var orderData = globalOrderData[orderID]; 
+        currentTemplateId = orderData.templateID;
       
         // load the form using the default content
         loadForm(orderData.templateID, function() {
       
-          // get the data for the item
+          // get the data used for the order
           adrapid.getOrderData(orderData.orderID).then(function(orderData) {
             
             // update the form fields with the values stored 
@@ -257,15 +253,18 @@
       
             // re-bind save order event
             setTimeout(function() {
-      
-              $('#render, .send').off().on('click', function(e) {
+              $('.send').off().on('click', function(e) {
+                console.log('Send EDIT order!');
                 e.preventDefault();
                 $('#orders-table').show();
                     
                 // send the order to adrapid
-                sendOrder(orderData.templateID).then(function(orderData) {
+                sendOrder().then(function(orderData) {
                   
                   // update the orders table for this order
+                  $('td#order-' + orderID + '-orderId').text(orderData.order_id);
+      
+                  // update the db
                   globalOrderData[orderID].orderID = orderData.order_id; // set the new orderID
                   updateDb();
       
@@ -338,7 +337,7 @@
       
       function addTableRow(i, row) {
         var output = '<tr id="order-' + i + '">' +
-          '<td>' + row.orderID + '</td>' + 
+          '<td id="order-' + i + '-orderId">' + row.orderID + '</td>' + 
           '<td>' + i + '</td>' +
           '<td><a href="#" class="button edit_order small" data-orderID="' + i + '">Edit</a></td>' +
           '<td><a href="#" class="button remove_order small" data-orderID="' + i + '">Remove</a></td>' +
