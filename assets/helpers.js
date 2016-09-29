@@ -65,6 +65,7 @@ var helpers = function(options) {
     if(settings.formats) form += form_formats(rules.formats);
     
     // create form fields
+    // TODO: group by field type, add support for not showing certain field types
     $.each(rules.fields, function(key, field) {
       form += form_field(field);
     });
@@ -101,7 +102,7 @@ var helpers = function(options) {
       }
     }, options);
 
-    adrapid.watch({
+    return adrapid.watch({
       order_id: options.order_id,
       init: settings.init,
       update: settings.update,
@@ -159,9 +160,7 @@ var helpers = function(options) {
 
   }
 
-
-  // internal helpers
-
+  // render formats dropdown
   function form_formats(formats) {
     var temp = '<br> <label for="formats">Banner format</label> <br><select name="formats"><br>';
     
@@ -173,13 +172,12 @@ var helpers = function(options) {
     return temp;
   }
 
-
+  // render a form field
   function form_field(field) {
-    return '<label for="' + field.name + '">' + field.label + '</label> <br>' + 
-      '<input name="' + field.name + '" ' + 
-      'value="' + field.default + '"' + 
-      'prop="' + field.type + '"' +
-      '><br>';
+    return '<div class="field">' +
+      '<label for="' + field.name + '">' + field.label + '</label>' + 
+      '<input name="' + field.name + '" value="' + field.default + '" prop="' + field.type + '" />' + 
+     '</div>';
   }
 
 
@@ -1174,6 +1172,9 @@ var helpers = function(options) {
       selector: '#form',
       target: '#target',
       formats: true, // include formats dropdown
+      colors: true, // include colors
+      images: true, // include images
+      texts: true, // include texts
       form: '',
       before: func,
       complete: func,
