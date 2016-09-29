@@ -52,6 +52,10 @@ var helpers = function(options) {
       selector: '#form',
       target: '#target',
       formats: true, // include formats dropdown
+      colors: true, // include colors
+      images: true, // include images
+      texts: true, // include texts//
+      url: true, // include URL field
       form: '',
       before: func,
       complete: func,
@@ -65,13 +69,13 @@ var helpers = function(options) {
     if(settings.formats) form += form_formats(rules.formats);
     
     // create form fields
-    // TODO: group by field type, add support for not showing certain field types
-    $.each(rules.fields, function(key, field) {
-      form += form_field(field);
-    });
+    // form += build_fields(rules.fields);
+    if(settings.texts) form += build_fields(rules.fields, 'text', 'text-fields');
+    if(settings.images) form += build_fields(rules.fields, 'image', 'image-fields');
+    if(settings.colors) form += build_fields(rules.fields, 'color', 'color-fields');
 
     // add url field at bottom of form
-    form += form_field({name: 'URL', label: 'URL', type: 'URL', default: ''});
+    if(settings.url) form += form_field({name: 'URL', label: 'URL', type: 'URL', default: ''});
 
     // close form
     form += '</div>';
@@ -170,6 +174,28 @@ var helpers = function(options) {
 
     temp += '</select> <br><br>';
     return temp;
+  }
+
+  // build a set of form fields 
+  function build_fields(fields, type, wrap) {
+    var output = '';
+
+    // filter fields
+    if(type) {
+      fields = fields.filter(function (el) {
+        return el.type == type
+      });
+    }
+
+    // build fields
+    $.each(fields, function(key, field) {
+      output += form_field(field);
+    });
+
+    // wrap fields in containing div
+    if(wrap) output = '<div class="' + wrap + '">' + output + '</div>';
+
+    return output;
   }
 
   // render a form field
@@ -1175,6 +1201,7 @@ var helpers = function(options) {
       colors: true, // include colors
       images: true, // include images
       texts: true, // include texts
+      url: true, // include url
       form: '',
       before: func,
       complete: func,
