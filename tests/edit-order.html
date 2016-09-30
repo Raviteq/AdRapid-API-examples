@@ -119,7 +119,7 @@
       });
       
       // edit orders
-      $('tbody .edit_order').on( "click", function() {
+      $('tbody').on('click', '.edit_order', function() {
         editOrder($(this).attr('data-orderID'));
       });
       
