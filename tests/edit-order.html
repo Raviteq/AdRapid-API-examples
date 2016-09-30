@@ -187,6 +187,7 @@
       
       // add a new order to our orders object, update our dv
       function createOrder(order, templateId) {
+        if(!templateId) templateId = currentTemplateId;
       
         // hide form, show orders table
         $('#templates, #orders-table').show();
