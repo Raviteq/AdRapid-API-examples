@@ -9,8 +9,6 @@ block description
   
   .buttons-toolbar
     button#newOrder New order
-  
-
 
   table#orders-table
     thead
@@ -20,14 +18,12 @@ block description
         th
     tbody
 
-
 block form_content
   form#the_form
     #form_description
     +bar
     #form-content.row.box
     +bar
-
 
 block results
   #target
@@ -45,12 +41,11 @@ block scripts
   script(type="text/javascript").
 
     // config
-    var projects = []; // list of template
+    var projects = []; // list of templates
     var api_key = '6271f323ff24875b74569ebc76eafa7c8ce0aa85';
     var templateId = '22bc0b7770842cc6310b25fec2346b8252f31ecf';
     var currentTemplateId = templateId;
-    var globalorderID = 17922;
-    var globalOrderData = {}; // our orders "db"
+    var globalOrderData = {}; // object representing our orders database - in a real-world scenario an actual database would be used
     var adrapid = new AdRapid(api_key); // initialize AdRapid with our API key
 
     // dummy order data
@@ -75,12 +70,7 @@ block scripts
     // initialize app
     init();
 
-
-    // main initialize functio
     function init() {
-      // unset user data
-      //- localStorage.removeItem('orders');
-
       adrapid.templates().then(setup_templates);
       populateData();
       populateTable();
@@ -94,7 +84,6 @@ block scripts
         localStorage.setItem('orders', JSON.stringify(orderData));
         globalOrderData = orderData;
       } else {
-        //- localStorage.setItem('orders', JSON.stringify(orderData)); // deb
         globalOrderData = JSON.parse(localStorage.getItem('orders'));
       }
     }
@@ -125,6 +114,7 @@ block scripts
       removeOrder($(this).attr('data-orderID'));
     });
 
+    // hide some elements initially
     $('#the_form button, #form').hide();
 
 
@@ -205,14 +195,15 @@ block scripts
       addTableRow(newId, globalOrderData[newId]);
     }
 
-    // edit order
+    // edit an existing order
     function editOrder(orderID) {
 
-      // get the data for our local orderID
+      // get the order data for our local orderID
       var orderData = globalOrderData[orderID]; 
       currentTemplateId = orderData.templateID;
 
-      // load the form using the default content
+      // fetch the form for the selected template of the order.
+      // the form will contain the default data
       loadForm(orderData.templateID, function() {
 
         // get the data used for the order
@@ -224,81 +215,70 @@ block scripts
             $('input[name=' + key + ']').val(val);
           });
 
-          // re-bind save order event
-          setTimeout(function() {
-            console.log('Bind edit order');
-            $('.send').off().on('click', function(e) {
-              console.log('Send EDIT order!');
-              e.preventDefault();
-              
-              // hide form, show orders table
-              $('#templates, #orders-table').show();
-              $('#form').hide();
-                  
-              // send the order to adrapid
-              sendOrder().then(function(orderData) {
-                
-                // update the orders table for this order
-                $('td#order-' + orderID + '-orderId').text(orderData.order_id);
-
-                // update the db
-                globalOrderData[orderID].orderID = orderData.order_id; // set the new orderID
-                updateDb();
-
-                return orderData;
-              })
-              .then(helpers.watchOrder);
-            });
-          }, 2500);
-
+          // bind save order event
+          bindEditOrderActions(orderData, orderID);
         });
-        
       });
+    }
+    
+    function bindEditOrderActions(orderData, orderID) {
+      $('.send').off().on('click', function(e) {
+        e.preventDefault();
+        console.log('Send EDIT order!');
+        
+        // hide form, show orders table
+        $('#templates, #orders-table').show();
+        $('#form').hide();
+            
+        // send the order to adrapid
+        sendOrder().then(function(orderData) {
+          
+          // update the orders table for this order
+          $('td#order-' + orderID + '-orderId').text(orderData.order_id);
 
+          // update the db
+          globalOrderData[orderID].orderID = orderData.order_id; // set the new orderID
+          updateDb();
+
+          return orderData;
+        })
+        .then(helpers.watchOrder);
+      });
     }
 
     function removeOrder(orderID) {
-      
-      // delete from localStorage
-      delete globalOrderData[orderID];
-      updateDb();
-
-      // delete from table
-      $('tr#order-' + orderID).remove();
+      delete globalOrderData[orderID]; // delete from localStorage
+      updateDb(); // update the database
+      $('tr#order-' + orderID).remove(); // delete from orders table
     }
 
     function updateDb() {
       localStorage.setItem('orders', JSON.stringify(globalOrderData));
     }
 
-    // load form helper
+    // generated a order form for a tempalte
     function loadForm(template, callback) {
-      console.log('Will load form for template ' + template);
-
+      $('#templates, #form').toggle();
+      $('#target').html('loading....');
+      
+      // get the rules for the template
       adrapid.rules(template).then(function(rules) {
+
+        // build the form using helper function
         helpers.buildForm(rules, template, {
           selector: '#form-content',
-          //- before: function() {
-          //-   $('#the_form button, .form_placeholder').toggle();
-          //- },
           complete: function(data) {
-            helpers.addUploadHelpers();
-            helpers.addColorPickers();
-            
-            // some elems fixes
             $('.loader').fadeOut();
             $('#the_form button, #form').show();
             $('.form_placeholder, #templates').hide();
 
-            // append live preview
+            // append the live preview
             getLivePreview(template);
 
             if(callback) callback();
           }
         });
       });
-
-      $('#templates, #form').toggle();
     }
 
     function getLivePreview(template_key) {
