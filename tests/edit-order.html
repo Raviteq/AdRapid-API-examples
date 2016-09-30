@@ -196,8 +196,10 @@
         // setup watch event for the order
         helpers.watchOrder(order);
         
+        // get the ID of the new order (= highest order number + 1)
+        var newId = parseInt(Object.keys(globalOrderData).slice(-1)[0]) + 1;
+        
         // add the order to our orders object/"db"
-        var newId = Object.keys(globalOrderData).length + 1;
         globalOrderData[newId] = {
           orderID: order.order_id,
           userID: 123,
