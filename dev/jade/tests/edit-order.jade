@@ -292,7 +292,7 @@ block scripts
     }
 
     function addTableRow(i, row) {
-      $('tbody').append('<tr id="order-' + i + '">' +
+      $('tbody').prepend('<tr id="order-' + i + '">' +
         '<td>' + i + '</td>' +
         '<td id="order-' + i + '-orderId">' + row.orderID + '</td>' + 
         '<td>' + 
