@@ -6,19 +6,18 @@ block title
 block description
   h1 Edit order example
   p This is a sample implementation for edit order handling
-  button#getOrder Get order
-  button#newOrder New order
+  
+  .buttons-toolbar
+    button#newOrder New order
   
 
-block app_content
+
   table#orders-table
     thead
       tr
         th ID
-        th Order id
-        th Edit
-        th Remove
-        th Download
+        th orderID
+        th
     tbody
 
 
@@ -92,11 +91,9 @@ block scripts
       
       // check for localStorage data - if populated we should use those  
       if(localStorage.getItem('orders') === null) {
-        // does not exist
         localStorage.setItem('orders', JSON.stringify(orderData));
         globalOrderData = orderData;
       } else {
-        // exists, set from localStorage data
         //- localStorage.setItem('orders', JSON.stringify(orderData)); // deb
         globalOrderData = JSON.parse(localStorage.getItem('orders'));
       }
@@ -108,23 +105,14 @@ block scripts
       });
     }
 
-    function newOrder() {
-      $('.template').show(); // show templates 
-      //- $('#orders-table').hide();
-    }
-
-
     // bind events
     // ------------------------------------------------------------
 
-    // temp get order 
-    $('#getOrder').click(function(e) {
-      e.preventDefault();
-      editOrder(1); // edit first order
-    });
-
     // create a new order
-    $('#newOrder').on('click', newOrder);
+    $('#newOrder').on('click', function() {
+      $('.template').show();
+      $('#orders-table, .buttons-toolbar, #description p').hide();
+    });
 
     // edit orders
     $('tbody .edit_order').on( "click", function() {
@@ -140,7 +128,6 @@ block scripts
     $('#the_form button, #form').hide();
 
 
-
     // addiational order helpers
     // ------------------------------------------------------------
 
@@ -149,13 +136,7 @@ block scripts
         projects[data.identifier] = data.templateId; // add project API key to array of available projects
         $('#templates').append('<div class="template hide" name="' + data.identifier + '"><img src="' + data.thumbnail + '" style="width: 100%; " title="' + data.name + '" /></div>'); // append template to UI
       });
-      bind_buttons();
-    }
-
-    function filter_templates(templates) {
-      return templates.filter(function(template) {
-        return template.group == 'offer';
-      });
+      bind_buttons(); // setup click events
     }
 
     function bind_buttons() {
@@ -167,7 +148,6 @@ block scripts
         template_key = projects[$(this).attr('name')];
         currentTemplateId = template_key;
         loadForm(template_key);
-        //- getLivePreview(template_key);
       });
       
       // when the form is submitted, handle sending the order to AdRapid
@@ -188,13 +168,10 @@ block scripts
     // TODO: maintain correct templateId;
     function sendOrder(templateId) {
       if(!templateId) templateId = currentTemplateId;
-      //- if(!templateId) templateId = projects[$('.active').attr('name')];
-      //- if(!templateId) templateId = '22bc0b7770842cc6310b25fec2346b8252f31ecf';
-
+      
       var order             = $('form#the_form').serializeObject();
           order.templateId  = templateId;
-      
-      // TODO: needs to return orderID
+
       return adrapid.sendOrder(order);
     }
 
@@ -205,6 +182,10 @@ block scripts
 
     // add a new order to our orders object, update our dv
     function createOrder(order, templateId) {
+
+      // hide form, show orders table
+      $('#templates, #orders-table').show();
+      $('#form').hide();
       
       // setup watch event for the order
       helpers.watchOrder(order);
@@ -226,6 +207,8 @@ block scripts
 
     // edit order
     function editOrder(orderID) {
+
+      // get the data for our local orderID
       var orderData = globalOrderData[orderID]; 
       currentTemplateId = orderData.templateID;
 
@@ -243,10 +226,14 @@ block scripts
 
           // re-bind save order event
           setTimeout(function() {
+            console.log('Bind edit order');
             $('.send').off().on('click', function(e) {
               console.log('Send EDIT order!');
               e.preventDefault();
-              $('#orders-table').show();
+              
+              // hide form, show orders table
+              $('#templates, #orders-table').show();
+              $('#form').hide();
                   
               // send the order to adrapid
               sendOrder().then(function(orderData) {
@@ -316,7 +303,6 @@ block scripts
 
     function getLivePreview(template_key) {
       helpers.template_key = template_key;      // store template key in helpers object.. secret fix
-      //- helpers.getForm(template_key);            // get the form for the template
       helpers.getLivePreview(template_key);     // get the live preview, bind form events
     }
 
@@ -326,13 +312,13 @@ block scripts
     }
 
     function addTableRow(i, row) {
-      var output = '<tr id="order-' + i + '">' +
-        '<td id="order-' + i + '-orderId">' + row.orderID + '</td>' + 
+      $('tbody').append('<tr id="order-' + i + '">' +
         '<td>' + i + '</td>' +
-        '<td><a href="#" class="button edit_order small" data-orderID="' + i + '">Edit</a></td>' +
-        '<td><a href="#" class="button remove_order small" data-orderID="' + i + '">Remove</a></td>' +
-        '<td><a href="http://test.adrapid.com/downloads/zip/' + row.orderID + '" class="button download_order small" data-orderID="' + i + '">Download</a></td>' +
-
-      '</tr>';
-      $('tbody').append(output);
+        '<td id="order-' + i + '-orderId">' + row.orderID + '</td>' + 
+        '<td>' + 
+          '<a href="#" class="button edit_order small" data-orderID="' + i + '">Edit</a>' +
+          '<a href="#" class="button remove_order small" data-orderID="' + i + '">Remove</a>' +
+          '<a href="http://test.adrapid.com/downloads/zip/' + row.orderID + '" class="button download_order small" data-orderID="' + i + '">Download</a>' + 
+        '</td>' +
+      '</tr>');
     }
