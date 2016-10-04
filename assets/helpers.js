@@ -28,7 +28,7 @@ var helpers = function(options) {
   var globalOptions = false; // global options var
   var currentFormat = '300x250'; // contains current format of html5 banner
   var formFields; // contains form field rules
-  var edgeSrc = 'http://animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js'; // path to Edge
+  var edgeSrc = '//animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js'; // path to Edge
   var pixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // 'http://test.adrapid.com/img/assets/pixel.png';
 
 
