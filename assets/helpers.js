@@ -1077,10 +1077,10 @@ var helpers = function(options) {
       $('#iframe_result').contents().find('#gwd-ad').css('background-color', color);
       $('#iframe_result').contents().find('.gwd-page-wrapper').css('background-color', color);
       
-      // remove previously set background image
+      // remove previously set background image (currently disabled)
       // TODO: remove name dependency
-      $('input[name=img_1]').val('');
-      $('#Stage__02').css('background-image', '');
+      // $('input[name=img_1]').val('');
+      // $('#Stage__02').css('background-image', '');
 
     // button text
     } else if(target.indexOf('button_text') > -1) {
