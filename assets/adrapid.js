@@ -13,7 +13,7 @@ var AdRapid = function(params) {
   (function init() {
     if(typeof params === 'string') { params = {api_key: params} }
     params                = params || {};
-    this.api_url          = params.api_url || 'http://test.adrapid.com/api/',
+    this.api_url          = params.api_url || '//test.adrapid.com/api/',
     this.api_key_public   = params.api_key || '6271f323ff24875b74569ebc76eafa7c8ce0aa85', // demo API-key
     this.debug            = params.debug || false,
     this.inspectors       = [];
