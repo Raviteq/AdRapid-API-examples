@@ -1142,9 +1142,9 @@ var helpers = function(options) {
     // utilize minicolor library if available
     if (typeof $.minicolors !== 'undefined') {
       $('input[prop=color]').minicolors({
-        control: 'wheel',
+        control: 'hue',
         format: 'rgb',
-        opacity: true,
+        opacity: false,
         change: function(value, opacity) {
           if(!value) return;
           changeColor($(this).attr('name'), $(this).val());
