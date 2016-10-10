@@ -30,7 +30,7 @@ var helpers = function(options) {
   var formFields; // contains form field rules
   var edgeSrc = '//animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js'; // path to Edge
   var pixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // 'http://test.adrapid.com/img/assets/pixel.png';
-
+  var spinner, tempColor;
 
   // helper functions
   /////////////////////////////////////////////////////////////////
@@ -990,6 +990,7 @@ var helpers = function(options) {
       bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
       getAndBindFormFields(globalOptions); // get and bind form fields for the template
       bannerState = true;
+      hideSpinner();
     // }
   }
 
@@ -997,6 +998,7 @@ var helpers = function(options) {
   // TODO: unbind previously set listeners
   function switchFormat(newFormat) {
     $('#target').hide();
+    showSpinner();
 
     // reset banner state
     resetBannerState();
@@ -1109,6 +1111,60 @@ var helpers = function(options) {
     }
   }
 
+  // spinner helper function
+  // TODO: add support for custom selector
+  // TODO: add support for custom spinner code
+  function addSpinner(parent) {
+    // if(!parent) parent = $('#target').parent(); // '.livePreview'; // 'body'
+    parent = $('#target').parent().parent();
+    tempColor = $('#target').parent().css('background');
+
+    // add CSS animations definitons
+    $('<style>' + 
+      '@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }' +
+      '@keyframes fadeOut { from { opacity:1; } to { opacity:0; } }' +
+      '.fade-in {opacity:0;animation:fadeIn ease-in 1;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards;animation-duration:700ms;}' +
+      '.fade-out {animation:fadeOut ease-in 1;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards;animation-duration:700ms;}' +
+    '</style>').appendTo('body');
+
+
+    // add spinner to the document, bind to spinner selector
+    spinner = $('<div id="liveSpinner" class="liveSpinnerClass"></div>').css({
+      width: '40px',
+      height: '40px',
+      position: 'fixed',
+      top: '55%',
+      // left: '48%',
+      background: 'rgba(20, 20, 20, 0.2)',
+      'background-image': 'url("https://test.adrapid.com/img/assets/spinner.gif")',
+      'background-size': 'cover',
+      'z-index': '50000',
+      // border: '1px solid rgba(40, 40, 40, 0.4)',
+      'border-radius': '50%',
+      // opacity: 0, // hide for now
+    }).appendTo(parent)//.hide();
+  }
+
+  function showSpinner() {
+    // spinner.fadeIn();
+    spinner.removeClass('fade-out').addClass('fade-in');
+    // $('#target').parent().css({
+    //   background: '#111',
+    //   transition: 'all 400ms',
+    // });
+  }
+
+  function hideSpinner() {
+    setTimeout(function() {
+      // spinner.fadeOut();
+      spinner.removeClass('fade-in').addClass('fade-out');
+      // $('#target').parent().css({
+      //   background: tempColor,
+      //   transition: 'all 400ms'
+      // });
+    }, 1000); 
+  }
+
   /*
    * Add upload helpers to a form
    */
@@ -1174,6 +1230,10 @@ var helpers = function(options) {
       strategy: 'inline', // inline or iframe
       target: '#target', // target selector
     }, options);
+
+    // add spinner to the document
+    addSpinner();
+    hideSpinner();
 
     // get the banner type
     bannerType = getHtml5BannerType()
