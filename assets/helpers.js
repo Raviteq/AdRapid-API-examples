@@ -30,7 +30,7 @@ var helpers = function(options) {
   var formFields; // contains form field rules
   var edgeSrc = '//animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js'; // path to Edge
   var pixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // 'http://test.adrapid.com/img/assets/pixel.png';
-  var spinner, tempColor;
+  var spinner, tempColor, state = {};
 
   // helper functions
   /////////////////////////////////////////////////////////////////
@@ -500,20 +500,22 @@ var helpers = function(options) {
   // TODO: needs updated selector...
   function replaceImage(name, value, field) {
     if(!value || value.length < 3) return false; // do not replace image unless we have a value
-    performMultiple(changeImage(field, value), [0, 200]);
+    performMultiple(changeImage(field, value), [0, 200, 800]);
   }
 
   function changeImage(field, value) {
 
     // debug
-    // console.log('Replace image (' + field.attr + ') - ' + value);
+    // console.log('Replace image (' + field.attr + ') - ' + field.name + ' -> ' + value);
     // console.log(field);
 
     // different handling for img and background replacement
     if(field.attr == 'img') {
       replaceImageElement(field.target, value);
-    } else {
+    } else if(field.attr == 'background') {
       replaceImageBackground($(field.target), value);
+    } else {
+      console.log('Unknown image type: ' + field.attr);
     }
   }
 
@@ -852,12 +854,15 @@ var helpers = function(options) {
   }
 
   function replaceImageBackground(selector, newImage) {
+
     if(typeof selector == 'array') {
       $.each(selector, function(i, el) {
         replaceImageBackground(el, newImage);
       });
     } else {
+      console.log('Replace image background...');
       selector.css('background-image', 'url("' + newImage + '")');
+      // replaceImageElement(selector, newImage); // try replace img element as well
     }
   }
 
@@ -1121,33 +1126,24 @@ var helpers = function(options) {
 
     // add CSS animations definitons
     $('<style>' + 
-      '@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }' +
-      '@keyframes fadeOut { from { opacity:1; } to { opacity:0; } }' +
-      '.fade-in {opacity:0;animation:fadeIn ease-in 1;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards;animation-duration:700ms;}' +
-      '.fade-out {animation:fadeOut ease-in 1;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards;animation-duration:700ms;}' +
+      '#liveSpinner:after {display: block;position: relative;width: 20px;height: 20px;animation: rotate 0.5s linear infinite;-webkit-border-radius: 100%;-moz-border-radius: 100%;border-radius: 100%;border-top: 1px solid #545a6a;border-bottom: 1px solid #d4d4db;border-left: 1px solid #545a6a;border-right: 1px solid #d4d4db;content: \'\';opacity: .5;}' +
+      '#liveSpinner:after {width: 60px; height: 60px;}' +
+      '@keyframes rotate {0% {  transform: rotateZ(-360deg);  -webkit-transform: rotateZ(-360deg);  -moz-transform: rotateZ(-360deg);  -o-transform: rotateZ(-360deg);}100% {  transform: rotateZ(0deg);  -webkit-transform: rotateZ(0deg);  -moz-transform: rotateZ(0deg);  -o-transform: rotateZ(0deg);}}' +
     '</style>').appendTo('body');
 
-
     // add spinner to the document, bind to spinner selector
-    spinner = $('<div id="liveSpinner" class="liveSpinnerClass"></div>').css({
-      width: '40px',
-      height: '40px',
+    spinner = $('<div id="liveSpinner" class="spin"></div>').css({
       position: 'fixed',
       top: '55%',
       // left: '48%',
-      background: 'rgba(20, 20, 20, 0.2)',
-      'background-image': 'url("https://test.adrapid.com/img/assets/spinner.gif")',
-      'background-size': 'cover',
       'z-index': '50000',
-      // border: '1px solid rgba(40, 40, 40, 0.4)',
-      'border-radius': '50%',
-      // opacity: 0, // hide for now
-    }).appendTo(parent)//.hide();
+    }).appendTo(parent).hide(); 
+
+    setTimeout(showSpinner, 1200);
   }
 
   function showSpinner() {
-    // spinner.fadeIn();
-    spinner.removeClass('fade-out').addClass('fade-in');
+    spinner.fadeIn();
     // $('#target').parent().css({
     //   background: '#111',
     //   transition: 'all 400ms',
@@ -1156,13 +1152,12 @@ var helpers = function(options) {
 
   function hideSpinner() {
     setTimeout(function() {
-      // spinner.fadeOut();
-      spinner.removeClass('fade-in').addClass('fade-out');
+      spinner.fadeOut();
       // $('#target').parent().css({
       //   background: tempColor,
       //   transition: 'all 400ms'
       // });
-    }, 1000); 
+    }, 500); 
   }
 
   /*
