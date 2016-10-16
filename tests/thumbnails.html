@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../assets/app.css">
+    <link rel="stylesheet" type="text/css" href="./debug.css">
+    <title>Template thumbnails example</title>
+  </head>
+  <body>
+    <!-- main content-->
+    <div id="app" class="content">
+      <div id="templates">
+        <div id="description">
+        </div>
+      </div>
+      <div id="form">
+      </div>
+      <div id="results">
+        <h3>Results</h3>
+      </div>
+    </div>
+    <div id="spinner" class="loader">
+      <div class="throbber throbber_large"></div>
+    </div>
+    <!-- global scripts-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="../assets/adrapid.js"></script>
+    <script src="../assets/helpers.js"></script>
+    <script src="../assets/lib/shims/es6-promise.js"></script>
+    <script type="text/javascript">
+      // setup AdRapid & initialize 
+      var adrapid = new AdRapid('6271f323ff24875b74569ebc76eafa7c8ce0aa85');
+      adrapid.templates().then(setupTemplates);
+      
+      function setupTemplates(templates) {
+        $('body').addClass('debugger').html(''); // clear html element
+        var outp = '<div class="template-wrapper">';
+        $.each(templates, function(i, template) {
+          outp += '<div class="template-box"><h1>' + template.name + '</h1>';
+          $.map(template.thumbnails, function(val,key) {
+            outp += addImage(val, key);
+          });
+          outp += '</div>';
+        });
+        outp += '</div>'; 
+        $('body').append(outp);
+      }
+      
+      // image html helper
+      function addImage(url, format, template) {
+        url = 'https://' + url;
+        return '<div>' + 
+          '<h3>' + format + '</h3>' + 
+          '<a href="' + url + '" target="_blank">' +
+            '<img src="' + url.replace('test.adrapid.com/', 'test.adrapid.com/thumbnail/300/') + '" / >' + 
+          '</a>' +
+          '<a href="' + url.replace('banner.jpg', format + '.html') + '" target="_blank">' +
+            '<p>View HTML5</p>' + 
+          '</a>' +
+        '</div>';
+      }
+    </script>
+  </body>
+</html>

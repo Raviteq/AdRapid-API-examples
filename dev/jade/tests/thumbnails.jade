@@ -1,0 +1,43 @@
+//- template thumbnails example
+extends ../template.jade
+
+block title
+  title Template thumbnails example
+
+block head
+  link(rel="stylesheet", type="text/css", href="./debug.css")
+
+block scripts
+  script(type="text/javascript").
+    
+    // setup AdRapid & initialize 
+    var adrapid = new AdRapid('6271f323ff24875b74569ebc76eafa7c8ce0aa85');
+    adrapid.templates().then(setupTemplates);
+    
+    function setupTemplates(templates) {
+      $('body').addClass('debugger').html(''); // clear html element
+      var outp = '<div class="template-wrapper">';
+      $.each(templates, function(i, template) {
+        outp += '<div class="template-box"><h1>' + template.name + '</h1>';
+        $.map(template.thumbnails, function(val,key) {
+          outp += addImage(val, key);
+        });
+        outp += '</div>';
+      });
+      outp += '</div>'; 
+      $('body').append(outp);
+    }
+
+    // image html helper
+    function addImage(url, format, template) {
+      url = 'https://' + url;
+      return '<div>' + 
+        '<h3>' + format + '</h3>' + 
+        '<a href="' + url + '" target="_blank">' +
+          '<img src="' + url.replace('test.adrapid.com/', 'test.adrapid.com/thumbnail/300/') + '" / >' + 
+        '</a>' +
+        '<a href="' + url.replace('banner.jpg', format + '.html') + '" target="_blank">' +
+          '<p>View HTML5</p>' + 
+        '</a>' +
+      '</div>';
+    }
