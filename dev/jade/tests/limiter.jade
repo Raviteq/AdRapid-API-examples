@@ -1,0 +1,118 @@
+//- limiter example
+extends ../template.jade
+
+block title
+  title Limiter example
+
+block head
+  style.
+    /* some styling for the limiter */
+    .limiter {
+      display: block;
+      text-align: right;
+      max-width: 40px;
+      position: relative;
+      top: 50px;
+      left: 86%;
+      z-index: 1000 !important;
+      font-size: 128%;
+      color: #333;
+      opacity: 0;
+    }
+
+block results
+  #target
+    h3 Preview
+
+block scripts
+  script(type="text/javascript").
+
+    /* The whole limiter is included in the following block.
+     * Usage:
+     * var max = 100;
+     * var elem = $("#chars");
+     * $("#text").limiter(max, elem);
+    */
+    (function($) {
+      $.fn.extend( {
+        limiter: function(limit, elem) {
+          $(this).on("keyup focus", function() {
+            setCount(this, elem);
+          });
+          function setCount(src, elem) {
+            var chars = src.value.length;
+            if (chars > limit) {
+              src.value = src.value.substr(0, limit);
+              chars = limit;
+            }
+            elem.html( limit - chars );
+          }
+          setCount($(this)[0], elem);
+        }
+      });
+    })(jQuery);
+
+    // config
+    var apiKey = '6271f323ff24875b74569ebc76eafa7c8ce0aa85'; // apidemo@dev
+    var templateID = '22bc0b7770842cc6310b25fec2346b8252f31ecf'; // amedia_top-title
+    var adrapid = new AdRapid(apiKey); // initialize AdRapid
+    
+    // configure getForm settings
+    var settings = {
+      
+      // disable/hide some of the form elements
+      formats: false,
+      images: false,
+      colors: false,
+      url: false,
+
+      // define a callback function, is fired when the form has
+      // been added to the current page.
+      complete: function() {
+
+        // setup / add our limiters using a helper function
+        setupLimiters();
+
+        // add e message
+        $('#form').prepend('<h1>Limiters example</h1>');
+        $('#form').append(
+          '<p>This example illustrates an implementation of limiters in the order form. It uses a tiny limiter which is included in the source code of this page. The limiter operates on the <code>maxlength</code> attribute of input fields.</p>' + 
+          '<p>The <code>max_length</code> property is provided in the <code>template rules</code> API method. To enable limiters for the form, we simply loop through the input fields and create limiters for the fields that have a maxlength. In this example we also show/hide the limiter on when the input is focused</p>'
+        );
+      }
+    };
+
+    // setup form for a giveen templateID. we will setup our limiters when 
+    // the form has finished loading, using the defined callback function.
+    helpers.getForm(templateID, settings);
+
+    // setup limiters for all inputs that has a maxlength attribute
+    function setupLimiters() {
+      $('input').each(function(key, input) {
+        if($(input).attr('maxlength') > 0) createLimiter(input);
+      });
+    }
+
+    // helper function for creating&initializing a limiter for a field
+    function createLimiter(elem) {
+      var maxVal = $(elem).attr('maxlength'); // get the value of the maxlength attribute
+      var inputName = $(elem).attr('name'); // get the name of the input element
+      var limiterObj = $('<div id="limiter-for-' + inputName + '" class="limiter"></div>'); // create the limiter counter element
+
+      $(elem).parent().prepend(limiterObj); // append the counter to the parent element of the input
+      $(elem).limiter(maxVal, $('#limiter-for-' + inputName)); // setup tinylimiter for the input element
+    
+      // show/hide the limiter on focus with fancy animations
+
+      $('input[name="' + inputName + '"]').on('focus', function() {
+        limiterObj.stop().animate({opacity: 1}, {duration: 700});
+      });
+
+      $('input[name="' + inputName + '"]').on('blur', function() {
+        limiterObj.stop().animate({opacity: 0}, {duration: 700});
+      });
+
+    }
+    
+    // hide some elements
+    $('#templates, #target').hide();
