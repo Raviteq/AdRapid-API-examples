@@ -46,7 +46,7 @@ var helpers = function(options) {
 
   // build a form from template rules
   this.buildForm = function(rules, template, settings) {
-  
+
     // setup defaults
     var settings = $.extend( {
       selector: '#form',
@@ -200,10 +200,9 @@ var helpers = function(options) {
 
   // render a form field
   function form_field(field) {
-    return '<div class="field">' +
-      '<label for="' + field.name + '">' + field.label + '</label>' + 
-      '<input name="' + field.name + '" value="' + field.default + '" prop="' + field.type + '" />' + 
-     '</div>';
+    var fieldProperties = 'name="' + field.name + '" value="' + field.default + '" prop="' + field.type + '" ';
+    if(field.max_length) fieldProperties += 'maxlength="' + field.max_length + '" '; // handle maxlength
+    return '<div class="field"><label for="' + field.name + '">' + field.label + '</label>' +  '<input ' + fieldProperties + '/></div>';
   }
 
 
