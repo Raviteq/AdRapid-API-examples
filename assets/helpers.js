@@ -30,7 +30,7 @@ var helpers = function(options) {
   var formFields; // contains form field rules
   var edgeSrc = '//animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js'; // path to Edge
   var pixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // 'http://test.adrapid.com/img/assets/pixel.png';
-  var spinner, tempColor, state = {};
+  var spinner, format, tempColor, state = {}; // temp vars
 
   // helper functions
   /////////////////////////////////////////////////////////////////
@@ -47,24 +47,21 @@ var helpers = function(options) {
   // build a form from template rules
   this.buildForm = function(rules, template, settings) {
 
-    // setup defaults
+    // setup settings
     var settings = $.extend( {
-      selector: '#form',
-      target: '#target',
+      selector: '#form', // form selector
       formats: true, // include formats dropdown
       colors: true, // include colors
       images: true, // include images
       texts: true, // include texts//
       url: true, // include URL field
-      form: '',
-      before: func,
-      complete: func,
+      form: '', // any HTML to be included before te form output
+      complete: func, // complete function, is fired when the form has been added to the document
+      mode: 'html', // set mode of appending the content to the form selector. possible values are html, append and prepend
     }, settings);
 
     var form = settings.form + '<div>';
 
-    settings.before();
-    
     // create formats dropdown
     if(settings.formats) form += form_formats(rules.formats);
     
@@ -80,12 +77,16 @@ var helpers = function(options) {
     // close form
     form += '</div>';
 
-    // set form content
-    $(settings.selector).html(form);
-
-    // complete callback
-    settings.complete(rules);
+    // append the form to the HTML document
+    switch(settings.mode) {
+      default: $(settings.selector).html(form); break;
+      case 'append': $(settings.selector).append(form); break;
+      case 'prepend': $(settings.selector).prepend(form); break;
+    }
     
+    // perform complete callback function, sends the rules that was passed to this function
+    settings.complete(rules);
+
     // return rules to next
     return rules; 
   }
@@ -1125,9 +1126,9 @@ var helpers = function(options) {
 
     // add CSS animations definitons
     $('<style>' + 
-      '#liveSpinner:after {display: block;position: relative;width: 20px;height: 20px;animation: rotate 0.5s linear infinite;-webkit-border-radius: 100%;-moz-border-radius: 100%;border-radius: 100%;border-top: 1px solid #545a6a;border-bottom: 1px solid #d4d4db;border-left: 1px solid #545a6a;border-right: 1px solid #d4d4db;content: \'\';opacity: .5;}' +
+      '#liveSpinner:after {display: block;position: relative;width: 20px; height: 20px; animation: rotate 0.5s linear infinite; border-radius: 100%; border-top: 1px solid #545a6a; border-bottom: 1px solid #d4d4db; border-left: 1px solid #545a6a; border-right: 1px solid #d4d4db; content: \'\'; opacity: .5;}' +
       '#liveSpinner:after {width: 60px; height: 60px;}' +
-      '@keyframes rotate {0% {  transform: rotateZ(-360deg);  -webkit-transform: rotateZ(-360deg);  -moz-transform: rotateZ(-360deg);  -o-transform: rotateZ(-360deg);}100% {  transform: rotateZ(0deg);  -webkit-transform: rotateZ(0deg);  -moz-transform: rotateZ(0deg);  -o-transform: rotateZ(0deg);}}' +
+      '@keyframes rotate {0% {transform: rotateZ(-360deg);}}' +
     '</style>').appendTo('body');
 
     // add spinner to the document, bind to spinner selector
@@ -1215,33 +1216,43 @@ var helpers = function(options) {
   }
 
   /*
-   * Get a html5 live previe
+   * Retreive a html5 live preview and append it to the document
    */
-  this.getLivePreview = function(templateId, format, options) {
-    
+  this.getLivePreview = function(templateId, options) {
+    options = options || {};
+
     // define default options
     var settings = $.extend( {
       strategy: 'inline', // inline or iframe
       target: '#target', // target selector
-    }, options);
+      format: false, // format of the banner
+      complete: func, // complete callback
+    }, options);;
 
     // add spinner to the document
     addSpinner();
     hideSpinner();
 
+    // set global template key 
+    this.template_key = templateId;
+    
     // get the banner type
     bannerType = getHtml5BannerType()
 
     this.loadPreviewDependencies(function() {         // make sure animation dependencies is loaded before loading the banner
-      adrapid.getPreviewHtml5(templateId, format)     // get the banner animation content
+      adrapid.getPreviewHtml5(templateId, settings.format)     // get the banner animation content
         .then(function(data) {
-          if(format) setElementDims(format);          // set dimensions of preview container
+          if(settings.format) setElementDims(settings.format);          // set dimensions of preview container
           data.templateId = templateId;               // save template ID, is needed later
           return data;                                // return data to next step
         })
         .then(helpers.appendAnimation)                // append the banner to the page
         .then(helpers.previewHelper)                  // bind form events
-        .then(helpers.addUploadHelpers);              // add file uploads to form
+        .then(helpers.addUploadHelpers)               // add file uploads to form
+        .then(function(data) {
+          settings.complete(data);
+          return data;
+        });
     });
   }
 
@@ -1249,7 +1260,7 @@ var helpers = function(options) {
 
     // setup options
     var options = $.extend( {
-      selector: '#form',
+      selector: '#form', // form selector
       target: '#target',
       formats: true, // include formats dropdown
       colors: true, // include colors
@@ -1259,6 +1270,7 @@ var helpers = function(options) {
       form: '',
       before: func,
       complete: func,
+      mode: true, // mode or append to form selector?
     }, settings);
 
     return adrapid.rules(templateId).then(function(rules) {   // get the rules for the template
