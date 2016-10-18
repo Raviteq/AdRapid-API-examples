@@ -68,9 +68,6 @@ $(function() {
             order.templateId  = el;
             order.formats     = formats;
 
-            console.log('Send order..');
-            console.log(order);
-        
         // send the order
         adrapid.sendOrder(order).then(function(result) {
           watch_order(result.order_id, order.templateId); // watch the order

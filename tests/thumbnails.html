@@ -50,12 +50,15 @@
       // image html helper
       function addImage(url, format, template) {
         url = 'https://' + url;
+        var parts = url.split('/');
+        var burl = 'https://test.adrapid.com/api/embedded/' + parts[8]; 
         return '<div>' + 
           '<h3>' + format + '</h3>' + 
           '<a href="' + url + '" target="_blank">' +
             '<img src="' + url.replace('test.adrapid.com/', 'test.adrapid.com/thumbnail/300/') + '" / >' + 
           '</a>' +
-          '<a href="' + url.replace('banner.jpg', format + '.html') + '" target="_blank">' +
+          //- '<a href="' + url.replace('banner.jpg', format + '.html') + '" target="_blank">' +
+          '<a href="' + burl + '" target="_blank">' +
             '<p>View HTML5</p>' + 
           '</a>' +
         '</div>';
