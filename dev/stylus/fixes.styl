@@ -167,6 +167,8 @@ pre, .break
 .hide
   display none
 
+.hero
+  padding 2em
 
 
 #form_content > div,
@@ -201,15 +203,17 @@ h2 > a
   justify-content center
 
 .demoWrapper
-  border 2px solid blue
+  margin 0 -1.1em -1.1em -1.1em !important // bit of a hack
   display flex
   flex-wrap wrap
-  flex-direction columns
-  backround green
 
 .demo
   backround transparent
   padding 1em
-  border 1px solid red
+  border 1px solid #d0d0d0
   flex 1 1 auto
   flex-basis 30%
+
+
+#description
+  overflow visible !important
