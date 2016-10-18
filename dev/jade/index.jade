@@ -1,0 +1,31 @@
+
+extends ./template.jade
+
+block title
+  title AdRapid API demos
+
+block description
+
+  //- declare some demos
+  -demos = [{name: 'Simple example', path: './simple/index.html', description: 'A simple example for sending orders to AdRapid, as well as retreiving rendered banners.'}, {name: 'HTML5 live preview', path: './preview/index.html', description: 'Example for the live preview'}, {name: 'Minimal live-preview implementation', path: './tests/livepreview-minimal.html', description: 'Minimal/simplified implementation of the live-preview'}, {name: 'File uploads', path: './tests/file-upload.html', description: 'File uploads example'}, {name: 'Image crop', path: './tests/crop.html', description: 'Image crop example'}, {name: 'Image transformations', path: './tests/transform.html', description: 'Image transformations example'}, {name: 'Thumbnails', path: './tests/thumbnails.html', description: 'List template thumbnails example'}, {name: 'Edit order', path: './tests/edit-order.html', description: 'Edit order example'}, {name: 'Drafts', path: './tests/drafts.html', description: 'Drafts handling example'}];
+  
+
+  h1 AdRapid API demos
+  p A set of demos and example implementations for AdRapid public API.
+
+  .demoWrapper
+    each demo in demos
+      .demo
+        h2
+          a(href=demo.path, target='_blank')=demo.name
+        a(href=demo.path, target='_blank')= demo.path
+        p=demo.description
+
+
+block scripts
+  script.
+    $('#form, #results').remove(); // remove some unwanted elements
+    $('#templates').css({ // injext some css intoe our main container
+      'max-width': '900px',
+      'margin': '100px auto',
+    });

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../assets/app.css">
+    <title>AdRapid API demos</title>
+  </head>
+  <body>
+    <!-- main content-->
+    <div id="app" class="content">
+      <div id="templates">
+        <div id="description">
+          <h1>AdRapid API demos</h1>
+          <p>A set of demos and example implementations for AdRapid public API.</p>
+          <div class="demoWrapper">
+            <div class="demo">
+              <h2><a href="./simple/index.html" target="_blank">Simple example</a></h2><a href="./simple/index.html" target="_blank">./simple/index.html</a>
+              <p>A simple example for sending orders to AdRapid, as well as retreiving rendered banners.</p>
+            </div>
+            <div class="demo">
+              <h2><a href="./preview/index.html" target="_blank">HTML5 live preview</a></h2><a href="./preview/index.html" target="_blank">./preview/index.html</a>
+              <p>Example for the live preview</p>
+            </div>
+            <div class="demo">
+              <h2><a href="./tests/livepreview-minimal.html" target="_blank">Minimal live-preview implementation</a></h2><a href="./tests/livepreview-minimal.html" target="_blank">./tests/livepreview-minimal.html</a>
+              <p>Minimal/simplified implementation of the live-preview</p>
+            </div>
+            <div class="demo">
+              <h2><a href="./tests/file-upload.html" target="_blank">File uploads</a></h2><a href="./tests/file-upload.html" target="_blank">./tests/file-upload.html</a>
+              <p>File uploads example</p>
+            </div>
+            <div class="demo">
+              <h2><a href="./tests/crop.html" target="_blank">Image crop</a></h2><a href="./tests/crop.html" target="_blank">./tests/crop.html</a>
+              <p>Image crop example</p>
+            </div>
+            <div class="demo">
+              <h2><a href="./tests/transform.html" target="_blank">Image transformations</a></h2><a href="./tests/transform.html" target="_blank">./tests/transform.html</a>
+              <p>Image transformations example</p>
+            </div>
+            <div class="demo">
+              <h2><a href="./tests/thumbnails.html" target="_blank">Thumbnails</a></h2><a href="./tests/thumbnails.html" target="_blank">./tests/thumbnails.html</a>
+              <p>List template thumbnails example</p>
+            </div>
+            <div class="demo">
+              <h2><a href="./tests/edit-order.html" target="_blank">Edit order</a></h2><a href="./tests/edit-order.html" target="_blank">./tests/edit-order.html</a>
+              <p>Edit order example</p>
+            </div>
+            <div class="demo">
+              <h2><a href="./tests/drafts.html" target="_blank">Drafts</a></h2><a href="./tests/drafts.html" target="_blank">./tests/drafts.html</a>
+              <p>Drafts handling example</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="form">
+      </div>
+      <div id="results">
+        <h3>Results</h3>
+      </div>
+    </div>
+    <div id="spinner" class="loader">
+      <div class="throbber throbber_large"></div>
+    </div>
+    <!-- global scripts-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="../assets/adrapid.js"></script>
+    <script src="../assets/helpers.js"></script>
+    <script src="../assets/lib/shims/es6-promise.js"></script>
+    <script>
+      $('#form, #results').remove(); // remove some unwanted elements
+      $('#templates').css({ // injext some css intoe our main container
+        'max-width': '900px',
+        'margin': '100px auto',
+      });
+    </script>
+  </body>
+</html>
