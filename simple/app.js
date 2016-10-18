@@ -1,28 +1,29 @@
 // AdRapid API sample implementation
 // Documentation available at http://raviteq.github.io/adrapid-api/
 var projects = [];
+var api_key = '6271f323ff24875b74569ebc76eafa7c8ce0aa85';
 var adrapid = new AdRapid({
-  api_key: '6271f323ff24875b74569ebc76eafa7c8ce0aa85',
+  api_key: api_key,
   log: helpers.log // add a custom log function
 });
 
 // initialize
 adrapid.templates().then(setup_templates);
-$('#the_form button, #form').hide();
+
 
 function setup_templates(templates) {
   $.each(templates, function(i, data) {
     projects[data.identifier] = data.templateId; // add project API key to array of available projects
-    $('#templates').append('<div class="template" name="' + data.identifier + '"><img src="' + data.thumbnail + '" style="width: 100%; " /></div>'); // append template to UI
+    $('#templates').append('<div class="template" name="' + data.identifier + '"><img src="' + data.thumbnail + '" style="width: 100%; " title="' + data.name + '" /></div>'); // append template to UI
   });
 
-  bind_buttons();
+  bind_buttons(); // bind button actions
 }
 
 function bind_buttons() {
 
-  // when a template is clicked, load the form
-  $('.template').click(function(e) {
+  // when a template is clicked, load the form for the template
+  $('.template').click(function() {
     $('.template').removeClass('active');
     $(this).toggleClass('active');
     loadForm(projects[$(this).attr('name')]);
@@ -44,27 +45,30 @@ function bind_buttons() {
 
 function send_order() {
   var order             = $('form#the_form').serializeObject();
-      order.templateId  = projects[$('.active').attr('name')], // from our api-keys config
+      order.templateId  = projects[$('.active').attr('name')], // get the templateId from our api-keys config array
   
+  // send the order to AdRapid, then setup order eventlistener using helper function
   adrapid.sendOrder(order).then(helpers.watchOrder);
 }
 
-// load form helper 
-function loadForm(template) {
-  adrapid.rules(template).then(function(rules) {
-    helpers.buildForm(rules, template, {
-      selector: '#form-content',
-      before: function() {
-        $('#the_form button, .form_placeholder').toggle();
-      },
-      complete: function(data) {
-        // $('#the_form button, .form_placeholder').toggle();
-        $('.loader').fadeOut();
-        $('#the_form button').show();
-        $('.form_placeholder').hide();
-      }
-    });
+// helper function for loading a form
+function loadForm(templateId) {
+  helpers.getForm(templateId, {
+    selector: '#form-content',
+    complete: function(data) {
+      helpers.addUploadHelpers();
+      helpers.addColorPickers();
+      $('.loader').fadeOut();
+      $('#the_form button').show();
+      $('.form_placeholder').hide();
+      $('#form_description').html(
+        '<h2>' + rules.title + '</h2>' +
+        '<p>Below a form has bee created using the <code>templateIrules</code> for the selected template.</p>'
+      );
+    }
   });
 
   $('#templates, #form').toggle();
 }
+
+$('#the_form button, #form').hide(); // thide the form initially

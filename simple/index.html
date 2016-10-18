@@ -13,14 +13,14 @@
     <div id="app" class="content">
       <div id="templates">
         <div id="description">
-          <h3>Simple example</h3>
+          <h1>Simple example</h1>
           <p>This is a simple implementation of the AdRapid API. This example illustrates the process of getting a list of available templates, getting rules for a specific template, sending an order, as well as wating for and displaying the resulting ads.</p>
-          <p>The log shows the data that is sent to and returned from the API.</p>
           <p>Start by selecting one of the available templates below.</p>
         </div>
       </div>
       <div id="form">
         <form id="the_form">
+          <div id="form_description"></div>
           <button class="button send">Send order</button>
           <button class="button back">Go back</button>
           <div id="form-content" class="row box"></div>
@@ -40,10 +40,11 @@
     <div id="spinner" class="loader">
       <div class="throbber throbber_large"></div>
     </div>
-    <!-- scripts-->
+    <!-- global scripts-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
     <script src="../assets/adrapid.js"></script>
     <script src="../assets/helpers.js"></script>
+    <script src="../assets/lib/shims/es6-promise.js"></script>
     <script type="text/javascript" src="../assets/lib/inspector-json.js"></script>
     <script type="text/javascript" src="../assets/lib/jquery.minicolors.min.js"></script>
     <script type="text/javascript" src="app.js"></script>
