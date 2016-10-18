@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../assets/lib/jquery.minicolors.css">
+    <link rel="stylesheet" type="text/css" href="../assets/app.css">
+    <title>Minimal live-preview implementation</title>
+  </head>
+  <body>
+    <div id="app" class="content">
+      <div id="form"></div>
+      <div class="wrapper">
+        <div id="target"></div>
+      </div>
+    </div>
+    <div id="spinner" class="loader">
+      <div class="throbber throbber_large"></div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script type="text/javascript" src="../assets/lib/jquery.minicolors.min.js"></script>
+    <script src="../assets/lib/shims/es6-promise.js"></script>
+    <script src="../assets/adrapid.js"></script>
+    <script src="../assets/helpers.js"></script>
+    <script>
+      // minimal implementation for AdRapid live-preview
+      // assumes available selectors: #form = form selector, #target = target selector for the live preview
+      var apiKey = '6271f323ff24875b74569ebc76eafa7c8ce0aa85'; // our API key
+      var template_key = '22bc0b7770842cc6310b25fec2346b8252f31ecf'; // templateId for the template to use
+      var adrapid = new AdRapid(apiKey); // initialize AdRapid with our API key
+      helpers.getForm(template_key); // get the form for the template
+      helpers.getLivePreview(template_key); // get the live preview, bind form events
+    </script>
+  </body>
+</html>
