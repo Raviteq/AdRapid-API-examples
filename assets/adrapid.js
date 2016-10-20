@@ -13,7 +13,7 @@ var AdRapid = function(params) {
   (function init() {
     if(typeof params === 'string') { params = {api_key: params} }
     params                = params || {};
-    this.api_url          = params.api_url || '//test.adrapid.com/api/',
+    this.api_url          = params.api_url || 'http://api.adrapid.com/api/',
     this.api_key_public   = params.api_key || '6271f323ff24875b74569ebc76eafa7c8ce0aa85', // demo API-key
     this.debug            = params.debug || false,
     this.inspectors       = [];
@@ -30,8 +30,8 @@ var AdRapid = function(params) {
   this.api_get = function(method, params, data, ajaxSettings) {
     if(data) params = data;
     if(!params) params = {}
+    
     if(data && debug && typeof(log) == "function") log(data, 'POST -> ' + method);
-
     // console.log(' > GET: ' + method);
 
     return new Promise(function(resolve, reject) {
@@ -41,12 +41,6 @@ var AdRapid = function(params) {
         data: params,
         headers: { 'Authorization': this.api_key_public },
         success: function(response) {
-          if(data) log(data);
-          // if(data) {
-          //   console.log('Got this data... ->');
-          //   console.log(data);
-          // }
-          // console.log('-------------------------------------');
           response = jQuery.parseJSON(response);
           log(response, (data) ? 'POST -> ' + method : 'GET -> ' + method);
           resolve(response);
