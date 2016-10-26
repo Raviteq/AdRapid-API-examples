@@ -1,0 +1,238 @@
+extends ../template.jade
+
+block title
+  title HTML5 banner test
+
+block description
+  - templates = ['amedia-2_3-image', 'amedia-3_image', 'amedia-top_title', 'amedia-full_size'];
+  - formats = ['980x300', '980x150', '900x150', '180x500', '280x500', '480x400', '300x300', '246x71mm', '146x71mm', '196x71mm', '46x71mm', '96x71mm'];
+
+  h1 HTML5 banner test
+  p This is a little tool for testing responsive banners. Contains alls formats for the amedia banners.
+
+
+  h3 Select template & format
+  p Switch template and format by selecting in these fropdowns
+
+  .boxes.wey.bottomspace
+    .box
+      .ba
+        label(for='template') Template
+        select(name='template')
+         each template in templates
+           option(value=template)= template
+    
+    .box
+      .ba
+        label(for='format') format
+        select(name='format')
+         each format in formats
+           option(value=format)= format
+
+
+  h3 Banner dimensions
+  p This is the dimensions of the banner. Change width and height of the banner by using the sliders or writing in the fields, to see how the different sizes affect the banner. The ratio of the current format is also display.
+  
+  .boxes.inspect.bottomspace
+    .box
+      .ba
+        label(for='width') Width <br>
+        input(name='width', value='980', type='number', step='1')
+        input(name='width_slider', type='range', min='50', max='1000', step='1', value='980')
+    
+    .box
+      .ba
+        label(for='height') Height <br>
+        input(name='height', value='300', type='number', step='1')
+        input(name='height_slider', type='range', min='50', max='1000', step='1', value='300')
+    
+    .box
+      .ba
+        label(for='ratio') Ratio <br>
+        input.ratio(name='ratio', value='')
+
+    
+  h3 Viewport size
+  p Since the banner may be larger then can be displayed on the user's screen, we. The field calculate the actual dimensions of the banner as it is currently displayed. If we change the dimensions of the browser window, you will notice that the dimensions as well as the ratio of the displayed banner will change.
+
+  .boxes.bottomspace
+    .box
+      .ba
+        label(for='width_actual') Width
+        input(name='width_actual', disabled)
+    
+    .box
+      .ba
+        label(for='height_actual') Height
+        input(name='height_actual', disabled)
+    
+    .box
+      .ba
+        label(for='ratio_actual') Ratio
+        input.ratio(name='ratio_actual', disabled)
+
+
+block results
+  <iframe id="iframe_result" src="https://test.adrapid.com/pcdn/327/16408/54725/980x300.html" style="width: 980px; height: 300px; border: none;" border="0" scrolling="no" seamless="seamless" frameborder="0" height="300" width="980"></iframe>
+
+block form
+
+block scripts
+  script(type="text/javascript").
+
+    // config & helper functions
+
+    var adrapid = new AdRapid('6271f323ff24875b74569ebc76eafa7c8ce0aa85'); // initialize AdRapid
+    var iframe_element = $('#iframe_result');
+    
+    var formatWidth = 300;
+    var formatHeight = 300;
+    var viewPortWidth = 300;
+    var viewPortHeight = 300;
+    var formatRatio = '1:1';
+    var viewPortRatio = '1:1';
+
+    function getRatio(a, b) {
+      return (b == 0) ? a : getRatio(b, a%b);
+    }
+
+    function getOutputRatio(width, height) {
+      var ga = getRatio(width, height);
+      return width/ga + ":" + height/ga;
+    }
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // actual functions
+
+    function setIframeSize(width, height) {
+      iframe_element.width(width);
+      iframe_element.height(height);
+      setFormUi(width, height);
+    }
+
+    function setFormUi(width, height) {
+      setFormSizes(width, height);
+      setFormatRatio(width, height);
+      setFormActualSizes();
+    }
+
+    function setFormSizes(width, height) {
+      // reset sliders
+      $('input[name=width_slider').val(width);
+      $('input[name=height_slider').val(height);
+    }
+
+    function setFormActualSizes(width, height) {
+      if(!width) width = iframe_element.width();
+      if(!height) height = iframe_element.height();
+
+      $('input[name=width_actual]').val(width);
+      $('input[name=height_actual]').val(height);
+
+      // set ratio
+      $('input[name=ratio_actual]').val(getOutputRatio(width, height));
+
+      // TODO: set the sliders as  well?
+    }
+
+    function setFormatRatio(width, height) {
+      if(!width) width = $('input[name=width]').val();
+      if(!height) height = $('input[name=height]').val();
+      $('input[name=ratio]').val(getOutputRatio(width, height));
+    }
+
+    function setIframeSrc(event) {
+      if(event) event.preventDefault(); 
+
+      var template_src = $('select[name=template]').val();
+      var format_src = $('select[name=format]').val();
+      var newSrc = 'https://test.adrapid.com/templates/banner/' + template_src + '/' + format_src + '/' + format_src + '.html';
+      iframe_element.attr('src', newSrc);
+
+      console.log('> Update iframe, template: ' + template_src + ', format: ' + format_src);
+    }
+
+    function updateEvent(event) {
+      if(event) event.preventDefault();
+      setIframeSize($('input[name=width]').val(), $('input[name=height]').val());    
+    }
+
+
+    // handling of sliders
+
+    function changeWidth(value) {
+      $('input[name=width], input[name=width_slider]').val(value);
+      iframe_element.css('width', value);
+      // calc relative values as well
+      setFormActualSizes();
+      setFormatRatio()
+    }
+
+    function changeHeight(value) {
+      $('input[name=height], input[name=height_slider]').val(value);
+      iframe_element.css('height', value);
+      setFormActualSizes();
+      setFormatRatio();
+    }
+
+    $("input[name=width], input[name=width_slider]").on('input', function(){
+      changeWidth($(this).val());
+    });
+
+    $("input[name=height], input[name=height_slider]").on('input', function(){
+      changeHeight($(this).val());
+    });
+
+    // TODO: call fields and update 
+
+    // setup event handlers
+
+    function templateChange() {
+      setIframeSrc();
+    }
+
+    function formatChange(event) {
+      event.preventDefault();
+      setIframeSrc();
+
+      // update dims
+      var format = $('select[name=format]').val();
+      var dims = format.split('x');
+
+      // hnadle print sizes - make larger
+      if(dims[1].indexOf('mm') > -1) {
+        dims[0] = parseInt(dims[0]) * 3;
+        dims[1] = parseInt(dims[1]) * 3;
+      }
+
+      // update ui ?
+      $('input[name=width]').val(parseInt(dims[0]));
+      $('input[name=height]').val(parseInt(dims[1]));
+
+      updateEvent();
+    } 
+
+    function changeDims(event) {
+      var dims = $(this).val().split('x');
+      $('input[name=width]').val(dims[0]);
+      $('input[name=height]').val(dims[1]);
+      //- updateEvent();
+      return false;
+    }
+
+    // setup events / watchers
+    //- $('input').on('input', updateEvent); // redundant
+    $('select[name=size]').change(changeDims);
+    //- $('select[name=template]').change(updateEvent);
+    $('select[name=template]').change(templateChange);
+    $('select[name=format]').change(formatChange);
+    window.addEventListener("resize", updateEvent);
+    
+    // initialize
+    setTimeout(function() {
+      setIframeSrc();
+      updateEvent();
+    }, 100);
