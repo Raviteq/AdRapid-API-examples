@@ -29,7 +29,7 @@ var helpers = function(options) {
   var currentFormat = '300x250'; // contains current format of html5 banner
   var formFields; // contains form field rules
   var edgeSrc = '//animate.adobe.com/runtime/6.0.0/edge.6.0.0.min.js'; // path to Edge
-  var pixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // 'http://test.adrapid.com/img/assets/pixel.png';
+  var pixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // 'http://api.adrapid.com/img/assets/pixel.png';
   var spinner, format, tempColor, state = {}; // temp vars
 
   // helper functions
@@ -93,7 +93,7 @@ var helpers = function(options) {
 
   // watch order events
   this.watchOrder = function(options) {
-    var settings = $.extend( {
+    var settings = $.extend({
       init: function() {
         $('.loader').fadeIn();
       },
@@ -200,10 +200,24 @@ var helpers = function(options) {
   }
 
   // render a form field
-  function form_field(field) {
+  function form_field(field, options) {
+    var settings = $.extend({
+      maxLength: true,
+      textLimiter: false,
+    }, options);
+
     var fieldProperties = 'name="' + field.name + '" value="' + field.default + '" prop="' + field.type + '" ';
-    if(field.max_length) fieldProperties += 'maxlength="' + field.max_length + '" '; // handle maxlength
-    return '<div class="field"><label for="' + field.name + '">' + field.label + '</label>' +  '<input ' + fieldProperties + '/></div>';
+    
+    // handle maxlength 
+    if(settings.maxLength && field.max_length) fieldProperties += 'maxlength="' + field.max_length + '" '; 
+
+    var output = '<div class="field"><label for="' + field.name + '">' + field.label + '</label>' +  '<input ' + fieldProperties + '/>';
+  
+    // handle text-length counter    
+    if(settings.textLimiter && field.type == 'text') output += '<div class="calc" id="calc-' + field.name + '">0</div>';
+
+    output += '</div>'
+    return output;
   }
 
 
@@ -229,13 +243,11 @@ var helpers = function(options) {
     }
   }
 
-  // add an edge animation to the page
+  // add an banner to the current page
   this.appendAnimation = function(data, callback, target) {
-    
+
     // if we have html content, load it 
-    if(data.content) {
-      $('#target').html(data.content);
-    }
+    if(data.content) $('#target').html(data.content);
 
     // try setting dimensions 
     if(data.script.indexOf(', ') > -1) {
@@ -245,9 +257,7 @@ var helpers = function(options) {
       var edgeID = parts[1].substring(1, parts[1].length - 1);
 
       // create Stage element
-      if(!$('.' + edgeID).length) {
-        $('#target').html('<div id="Stage" class="' + edgeID + '"></div>');
-      }
+      if(!$('.' + edgeID).length) $('#target').html('<div id="Stage" class="' + edgeID + '"></div>');
 
       // add the script
       $('head').append(data.script);
@@ -255,9 +265,8 @@ var helpers = function(options) {
       // set dimensions
       var wdims = $('script#ad-preview').attr('data-dimensions').split('x');
       $('#target').width(wdims[0]).height(wdims[1]);
-      
     } else {
-      // try to append the script // ...
+      console.log('Head script');
       $('head').append(data.script);
     }
 
@@ -435,6 +444,7 @@ var helpers = function(options) {
   this.changeColor = changeColor;
   this.performMultiple = performMultiple;
   this.debugSelector = debugSelector;
+  this.debugCurrentScripts = debugCurrentScripts;
   helpers.debugImages = this.debugImages;
 
   // bind form events to update html5 live preview
@@ -443,6 +453,9 @@ var helpers = function(options) {
     // text fields change
     $('input[prop=text]').off().on('input', function() {
       $(fields[$(this).attr('name')]).html($(this).val());
+
+      // set temp calc var
+      $('#calc-' + $(this).attr('name')).text($(this).val().length);
     });
 
     // image fields change
@@ -936,24 +949,57 @@ var helpers = function(options) {
 
   // remove add depdendencies
   function unloadLivePreview(callback) {
-
-    // remove ad object
-    $('#ad-preview').remove();
+    console.log('Remove previous live preview...');
     
     // remove scripts
-    $("script[src='*preview_edge.js']").remove();
-    $("script[src='http://test.adrapid.com/templates/banner/*']").remove();
-    $("script[src='*edge.js']").remove();
-    $("script[src='*http://test.adrapid.com/templates/banner/amedia-3_image/980x300/980x300-preview_edge.js']").remove(); // test specific
-    $.each($('head script'), function(i, s) { $(s).remove(); });
-    $.each($('head object'), function(i, s) { $(s).remove(); });
+    // $("script[src='*edge.js']").remove();
+
+    $('script#ad-preview').remove();
+    
+    // $.each($('script#ad-preview'), function(i, s) { 
+    //   console.log($(s));
+    //   // $(s).remove();
+    // });
+
+    // loop through head scripts
+    $.each($('head script'), function(i, s) { 
+      if($(s).attr('src') && $(s).attr('src').indexOf('adrapid') > -1) {
+        console.log(' -> ' + $(s).attr('src'));
+        $(s).remove();
+      }
+    });
+
+    $.each($('head object'), function(i, s) { 
+      if($(s).attr('data') && $(s).attr('data').indexOf('adrapid') > -1) {
+        console.log(' -> ' + $(s).attr('src'));
+        $(s).remove();
+      }
+    });
 
     // reset global vars
     globalRules = false;
     formFields = false;
     bannerType = false;
 
-    if(callback) callback();
+    // do callback after some timeout
+    setTimeout(function() {
+      console.log('Done cleaning');
+      if(callback) callback();
+    }, 100);
+  }
+
+  function debugCurrentScripts() {
+    $.each($('head script'), function(i, s) {
+      if($(s).attr('src')) {
+        console.log(' -> ' + $(s).attr('src'));
+      }
+    });
+
+    $.each($('head object'), function(i, s) {
+      if($(s).attr('data')) {
+        console.log(' -> ' + $(s).attr('data'));
+      }
+    });
   }
 
   function resetBannerState() {
@@ -990,6 +1036,8 @@ var helpers = function(options) {
   }
 
   function updateBanner() {
+    console.log('Will update banner...');
+
     // if(!bannerState) {
       $('#target').show(); // make sure live preview banner is visible
       bannerType = getHtml5BannerType(); // get html5 banner type, save in global var
@@ -1002,6 +1050,7 @@ var helpers = function(options) {
   // change format helper
   // TODO: unbind previously set listeners
   function switchFormat(newFormat) {
+    console.log('Switching banner format: ' + newFormat);
     $('#target').hide();
     showSpinner();
 
@@ -1010,9 +1059,16 @@ var helpers = function(options) {
 
     switch(bannerType) {
       default:
+        console.log('Try reload: ' + bannerType);
+        // removePreviousPreview();
+        unloadLivePreview(function() {
+          reloadHtml5ForFormat(template_key, newFormat);
+          // getLivePreview()
+        });
       break;
 
       case 'adrapid':
+        console.log('Unsupported bannerType: ' + bannerType);
       break;
 
       case 'iframe':
@@ -1034,6 +1090,13 @@ var helpers = function(options) {
       break;
 
       case 'edge':
+        console.log('Try reload: ' + bannerType);
+        // removePreviousPreview();
+        unloadLivePreview(function() {
+          reloadHtml5ForFormat(template_key, newFormat);
+          bannerLoadEvents();
+          // getLivePreview()
+        });
       break;
     }
   }
@@ -1052,7 +1115,7 @@ var helpers = function(options) {
 
   // reload html5 helper
   function reloadHtml5ForFormat(template_key, format) {
-   
+
     // TODO: refactor, this function is duplicated
     adrapid.getPreviewHtml5(template_key, format) 
       .then(function(data) {
@@ -1222,12 +1285,13 @@ var helpers = function(options) {
     options = options || {};
 
     // define default options
-    var settings = $.extend( {
+    var settings = $.extend({
       strategy: 'inline', // inline or iframe
       target: '#target', // target selector
       format: false, // format of the banner
       complete: func, // complete callback
-    }, options);;
+      format: false, // start with a predefined format ?
+    }, options);
 
     // add spinner to the document
     addSpinner();
@@ -1297,7 +1361,19 @@ var helpers = function(options) {
     if(title) $('#log .content').prepend('<div class="log-message">' + title + ':</div>');  
   }
 
+  this.debugLog = function(content) {
+
+  }
+
 };
 
 // expose
 var helpers = new helpers();
+
+
+if(!log) {
+  function log(content) {
+    console.log(content);
+    return content;
+  }
+}
