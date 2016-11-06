@@ -26,9 +26,9 @@
             <div class="box"> 
               <label>...or select an image</label>
               <select name="switch">
-                <option value="http://test.adrapid.com/uploads/client_uploads/demo/img/180bf8_Purple-Flower-7_preview.jpg">Flower</option>
-                <option value="http://test.adrapid.com/uploads/client_uploads/demo/img/7c7c52_carina_nebula_preview.jpg">Galaxy</option>
-                <option value="http://test.adrapid.com/uploads/client_uploads/demo/img/681b75_Lightroom-Crop-Grid-Overlay_preview.jpg">Overlays</option>
+                <option value="https://test.adrapid.com/uploads/client_uploads/demo/img/180bf8_Purple-Flower-7_preview.jpg">Flower</option>
+                <option value="https://test.adrapid.com/uploads/client_uploads/demo/img/7c7c52_carina_nebula_preview.jpg">Galaxy</option>
+                <option value="https://test.adrapid.com/uploads/client_uploads/demo/img/681b75_Lightroom-Crop-Grid-Overlay_preview.jpg">Overlays</option>
               </select>
             </div>
           </div>
@@ -83,7 +83,7 @@
               <div class="box">
                 <div class="ba">
                   <label for="image">Image</label>
-                  <input name="image" value="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img/1c1e3a_Purple-Flower-7.jpg" placeholder="image" class="full">
+                  <input name="image" value="https://platform.adrapid.com/uploads/client_uploads/demo/img/180bf8_Purple-Flower-7_preview.jpg" placeholder="image" class="full">
                 </div>
               </div>
             </div>
@@ -92,9 +92,9 @@
       </div>
       <div id="results">
         <div class="flex">
-          <div class="box"><a href="#"><img id="cropzone" src="http://test.adrapid.com/thumbnail/500/uploads/client_uploads/demo/img/1c1e3a_Purple-Flower-7.jpg">
+          <div class="box"><a href="#"><img id="cropzone" src="https://platform.adrapid.com/uploads/client_uploads/demo/img/180bf8_Purple-Flower-7_preview.jpg">
               <h4>Image to be cropped</h4></a></div>
-          <div class="box"><a id="show" href="#" target="_blank"><img id="preview" src="http://test.adrapid.com/img/assets/pixel.png">
+          <div class="box"><a id="show" href="#" target="_blank"><img id="preview" src="https://test.adrapid.com/img/assets/pixel.png">
               <h4>Result</h4></a></div>
         </div>
         <button id="crop-button">Crop!</button>
@@ -118,7 +118,7 @@
       var adrapid = new AdRapid(api_key); // initialize AdRapid
       var width = $('#cropzone').width();
       var height = $('#cropzone').height();
-      var pixel = 'http://test.adrapid.com/img/assets/pixel.png';
+      var pixel = 'https://test.adrapid.com/img/assets/pixel.png';
       var cropTool;
       
       // Initialize the crop tool
