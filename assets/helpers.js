@@ -450,6 +450,8 @@ var helpers = function(options) {
   // bind form events to update html5 live preview
   function bindFormFields(fields) {
 
+    // TODO: add support for defining how each field type should be handled/retreived
+
     // text fields change
     $('input[prop=text]').off().on('input', function() {
       $(fields[$(this).attr('name')]).html($(this).val());
@@ -1139,11 +1141,13 @@ var helpers = function(options) {
       $('#iframe_result').contents().find('#submitBtn p').css('color', $('input[name=color_button_text1]').val());
       $('#iframe_result').contents().find('#page1_1 p, #page1_1 div').css('color', $('input[name=color_product_text1]').val());
 
+    } else if(target.indexOf('button_text') > -1) {
+      $('#iframe_result').contents().find('#submitBtn p').css('color', color);
+
     // background
     } else if(target.indexOf('background') > -1) {
       $('#Stage').css('background-color', color);
 
-      // iframe
       $('#iframe_result').contents().find('#gwd-ad').css('background-color', color);
       $('#iframe_result').contents().find('.gwd-page-wrapper').css('background-color', color);
       
@@ -1165,7 +1169,6 @@ var helpers = function(options) {
       // TODO: need global value
       $('#Stage_Text3 p span').css('background-color', color); 
     
-      // iframe
       $('#iframe_result').contents().find('#submitBtn').css('background-color', color);
 
     // cornercase: shape
