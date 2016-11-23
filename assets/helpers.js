@@ -1141,9 +1141,6 @@ var helpers = function(options) {
       $('#iframe_result').contents().find('#submitBtn p').css('color', $('input[name=color_button_text1]').val());
       $('#iframe_result').contents().find('#page1_1 p, #page1_1 div').css('color', $('input[name=color_product_text1]').val());
 
-    } else if(target.indexOf('button_text') > -1) {
-      $('#iframe_result').contents().find('#submitBtn p').css('color', color);
-
     // background
     } else if(target.indexOf('background') > -1) {
       $('#Stage').css('background-color', color);
@@ -1156,19 +1153,18 @@ var helpers = function(options) {
       // $('input[name=img_1]').val('');
       // $('#Stage__02').css('background-image', '');
 
-    // button text
-    } else if(target.indexOf('button_text') > -1) {
-      $('#iframe_result').contents().find('#submitBtn p').css('color', color);
-
     // product text
     } else if(target.indexOf('product_text') > -1) {
       $('#iframe_result').contents().find('#page1_1 p, #page1_1 div').css('color', color);
 
-    // button
+    // button text
+    } else if(target.indexOf('button_text') > -1) {
+      $('#Stage_Text3 p span').css('color', color);
+      $('#iframe_result').contents().find('#submitBtn p').css('color', color);
+
+    // button background
     } else if(target.indexOf('button') > -1) {
-      // TODO: need global value
       $('#Stage_Text3 p span').css('background-color', color); 
-    
       $('#iframe_result').contents().find('#submitBtn').css('background-color', color);
 
     // cornercase: shape
