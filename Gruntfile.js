@@ -10,7 +10,8 @@ module.exports = function(grunt) {
             compile: {
                 options: {
                     client: false,
-                    pretty: true
+                    pretty: true,
+                    // event: 'changed'
                 },
                 files: [ {
                   cwd: "dev/jade",
@@ -30,6 +31,12 @@ module.exports = function(grunt) {
             }
         },
 
+        ts: {
+            default : {
+                src: ["dev/ts/**/*.ts", "!node_modules/**"]
+            }
+        },
+
         watch: {
             options: {
                 watchTask: true
@@ -43,6 +50,11 @@ module.exports = function(grunt) {
             stylus: {
                 files: "dev/stylus/**/*.styl",
                 tasks: ['stylus'],
+            },
+
+            ts: {
+                files: "dev/ts/**/*.ts",
+                tasks: ['ts'],
             },
         },
 

@@ -9,6 +9,8 @@
     "grunt-contrib-stylus": "*",
     "grunt-contrib-watch": "*",
     "grunt-newer": "^1.2.0",
-    "jit-grunt": "*"
+    "jit-grunt": "*",
+    "grunt-ts": "^6.0.0-beta.3",
+    "typescript": "^1.8.10"
   }
 }
