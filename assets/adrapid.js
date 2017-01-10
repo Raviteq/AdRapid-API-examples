@@ -13,9 +13,9 @@ var AdRapid = function(params) {
   (function init() {
     if(typeof params === 'string') { params = {api_key: params} }
     params                = params || {};
-    this.api_url          = params.api_url || 'https://api.adrapid.com/api/',
-    this.api_key_public   = params.api_key || '6271f323ff24875b74569ebc76eafa7c8ce0aa85', // demo API-key
-    this.debug            = params.debug || false,
+    this.api_url          = params.api_url || 'https://api.adrapid.com/api/';
+    this.api_key_public   = params.api_key || '6271f323ff24875b74569ebc76eafa7c8ce0aa85'; // demo API-key
+    this.debug            = params.debug || false;
     this.inspectors       = [];
     if(params.log) log = params.log;
   })();
@@ -30,9 +30,7 @@ var AdRapid = function(params) {
   this.api_get = function(method, params, data, ajaxSettings) {
     if(data) params = data;
     if(!params) params = {}
-    
     if(data && debug && typeof(log) == "function") log(data, 'POST -> ' + method);
-    // console.log(' > GET: ' + method);
 
     return new Promise(function(resolve, reject) {
       var ajaxOptions = {  
@@ -67,6 +65,16 @@ var AdRapid = function(params) {
   // get templates
   this.templates = function() {
     return this.api_get('templates');
+  }
+
+  // list available tags
+  this.tags = function() {
+    return this.api_get('tags');
+  }
+
+  // get templates matching a specific tag
+  this.templatesWithTags = function(tags) {
+    return this.api_get('templates?tags=' + tags);
   }
 
   // get rules for template
