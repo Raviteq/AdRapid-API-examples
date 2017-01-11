@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../assets/app.css">
+    <title>Tags</title>
+  </head>
+  <body>
+    <!-- main content-->
+    <div id="app" class="content">
+      <div id="templates">
+        <div id="description">
+          <div id="description">
+            <h1>Tags</h1>
+            <p>Tags example</p>
+            <form id="main_form">
+              <select id="tags" name="tags"></select>
+              <button id="get_templates" class="button">Get templates</button>
+              <hr>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div id="form">
+        <form id="the_form">
+          <div id="form_description"></div>
+          <button class="button send">Send order</button>
+          <button class="button back">Go back</button>
+          <div id="form-content" class="row box"></div>
+          <button class="button send">Send order</button>
+          <button class="button back">Go back</button>
+        </form>
+      </div>
+      <div id="results">
+        <div class="flex">
+          <div class="box"></div>
+        </div>
+      </div>
+    </div>
+    <div id="spinner" class="loader">
+      <div class="throbber throbber_large"></div>
+    </div>
+    <!-- global scripts-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="../assets/adrapid.js"></script>
+    <script src="../assets/helpers.js"></script>
+    <script src="../assets/lib/shims/es6-promise.js"></script>
+    <script type="text/javascript">
+      var api_key = '6271f323ff24875b74569ebc76eafa7c8ce0aa85';
+      var adrapid = new AdRapid(api_key);
+      var projects = [];
+      var tagsContent, selectedTag;
+      
+      function init() {
+        adrapid.tags().then(function(tags) {
+          $.each(tags, function(key, val) {
+            tagsContent += '<option value="' + val + '">' + ucFirst(val) + '</option>';
+          });
+      
+          $('#tags').html(tagsContent);
+        });
+      
+        // thide the form initially
+        $('#form').hide();
+        $('#the_form button, #form').hide(); 
+      }
+      
+      $('#get_templates').click(function(event) {
+        event.preventDefault();
+        selectedTag = $('select[name=tags]').val();
+        $('#main_form').hide();
+        adrapid.templatesWithTags(selectedTag).then(setup_templates);
+      });
+      
+      function ucFirst(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+      
+      
+      
+      
+      
+      // from simple example
+      function setup_templates(templates) {
+        $.each(templates, function(i, data) {
+          projects[data.identifier] = data.templateId; // add project API key to array of available projects
+          $('#templates').append('<div class="template" name="' + data.identifier + '"><img src="' + data.thumbnail + '" style="width: 100%; " title="' + data.name + '" /></div>'); // append template to UI
+        });
+      
+        bind_buttons(); // bind button actions
+      }
+      
+      function bind_buttons() {
+      
+        // when a template is clicked, load the form for the template
+        $('.template').click(function() {
+          $('.template').removeClass('active');
+          $(this).toggleClass('active');
+          loadForm(projects[$(this).attr('name')]);
+        });
+      
+        // when the form is submitted, handle sending the order to AdRapid
+        $('.send').click(function(event) {
+          event.preventDefault();
+          send_order();
+        });
+      
+        // handle back button
+        $('.back').click(function(event) {
+          event.preventDefault();
+          $('#form, #templates').toggle();
+        });
+      
+      }
+      
+      function send_order() {
+        var order             = $('form#the_form').serializeObject();
+            order.templateId  = projects[$('.active').attr('name')], // get the templateId from our api-keys config array
+        
+        // send the order to AdRapid, then setup order eventlistener using helper function
+        adrapid.sendOrder(order).then(helpers.watchOrder);
+      }
+      
+      // helper function for loading a form
+      function loadForm(templateId) {
+        helpers.getForm(templateId, {
+          selector: '#form-content',
+          complete: function(data) {
+            helpers.addUploadHelpers();
+            helpers.addColorPickers();
+            $('.loader').fadeOut();
+            $('#the_form button').show();
+            $('.form_placeholder').hide();
+            $('#form_description').html();
+          }
+        });
+      
+        $('#templates, #form').toggle();
+      }
+      
+      
+      
+      
+      init();    
+    </script>
+  </body>
+</html>
