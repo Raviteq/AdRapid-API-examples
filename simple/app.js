@@ -48,7 +48,18 @@ function send_order() {
       order.templateId  = projects[$('.active').attr('name')], // get the templateId from our api-keys config array
   
   // send the order to AdRapid, then setup order eventlistener using helper function
-  adrapid.sendOrder(order).then(helpers.watchOrder);
+  adrapid.sendOrder(order)
+  .then(function(orderData) {
+    helpers.watchOrder({
+      order_id: orderData.order_id,
+      update: function(data) {
+        adrapid.getPreview(data.id).then(function(res) {
+          $('#results').html(res.preview);
+          addContentLinks(res);
+        });
+      },
+    })
+  });
 }
 
 // helper function for loading a form
@@ -65,10 +76,28 @@ function loadForm(templateId) {
         '<h2>' + rules.title + '</h2>' +
         '<p>Below a form has bee created using the <code>templateIrules</code> for the selected template.</p>'
       );
+
     }
   });
 
   $('#templates, #form').toggle();
 }
+
+function addContentLinks(preview) {
+  var baseUrl = preview.preview.split('src="')[1].split('.html')[0].split('/').splice(0,7).join('/') + '/';
+  $('#results > div').append(
+    link(baseUrl + 'banner.jpg') +
+    link(baseUrl + 'banner.pdf') +
+    link(baseUrl + 'banner_preview.jpg', 'pdf preview') +
+    link(baseUrl + 'banner.gif')
+  );
+}
+
+function link(href, name) {
+  if(!name) name = href.split('.').pop();
+  return '<a href="' + href + '" target="_blank" class="button">' + name + '</a> ';
+}
+
+
 
 $('#the_form button, #form').hide(); // thide the form initially
